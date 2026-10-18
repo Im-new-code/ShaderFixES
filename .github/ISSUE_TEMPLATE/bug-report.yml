@@ -1,0 +1,84 @@
+name: Bug report
+description: Report a shader compilation failure, crash, visual artifact, or compatibility issue.
+title: "[Bug]: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please search existing issues first. Do not upload private information or unredacted logs.
+  - type: input
+    id: shader
+    attributes:
+      label: Shader name and version
+      description: Include the original project URL if known.
+      placeholder: Shader name / version / URL
+    validations:
+      required: true
+  - type: input
+    id: minecraft
+    attributes:
+      label: Minecraft version and edition
+      placeholder: "Java Edition 1.17.1"
+    validations:
+      required: true
+  - type: input
+    id: loader
+    attributes:
+      label: Loader and version
+      placeholder: "Fabric 0.16.14, Forge, or not applicable"
+    validations:
+      required: false
+  - type: input
+    id: renderer
+    attributes:
+      label: Shader mod, renderer, and versions
+      placeholder: "Iris, OptiFine, MobileGlues, etc."
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device, GPU, and operating system
+      placeholder: "Device model, GPU, OS version"
+    validations:
+      required: false
+  - type: textarea
+    id: issue
+    attributes:
+      label: What happened?
+      description: Describe the actual result and what you expected instead.
+      placeholder: |
+        Actual result:
+        Expected result:
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Install ...
+        2. Enable ...
+        3. Observe ...
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs, screenshots, and test settings
+      description: Paste relevant errors and attach screenshots. Remove usernames, tokens, paths, and other private data.
+      render: markdown
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Final checks
+      options:
+        - label: I searched for a duplicate issue.
+          required: true
+        - label: I removed private information from logs and screenshots.
+          required: true
