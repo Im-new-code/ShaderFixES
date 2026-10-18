@@ -50,7 +50,7 @@ port/legacy-shader-1.17-to-1.20
 experiment/mobile-cloud-rendering
 ~~~
 
-A branch should focus on **one shader or one tightly related task**. Keep unrelated shader projects separate. Merge into main only when the work is ready to be documented or shared.
+A branch should focus on **one shader or one tightly related task**. Keep unrelated shader projects separate. Merge into main only when the work is ready to be documented or shared.\n\n### Starting a new shader project\n\nUse the reusable [shader project template](templates/shader-project/README.md) and [testing notes template](templates/shader-project/TESTING.md). When starting a project, create a branch from `main`, copy the template files into that branch's root, fill in the project details, and keep shader-specific source and evidence on that branch. The `templates/` directory on `main` is the canonical starter kit, not the working copy of a shader.
 
 ## A good shader project includes
 
