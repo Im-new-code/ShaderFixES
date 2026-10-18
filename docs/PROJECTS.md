@@ -1,12 +1,12 @@
 # Shader project index
 
-This page tracks shader work hosted by ShaderFixES. Each project should have its own focused branch, with a project README and testing notes. Only list a project here once its branch actually exists.
+This page tracks shader work hosted by ShaderFixES. Each project should have its own focused branch, with a project README and testing notes. Only list a project once its branch actually exists.
 
 ## Active and completed projects
 
 | Project | Branch | Track | Target environment | Status | Notes |
 |---|---|---|---|---|---|
-| No shader projects indexed yet | — | — | — | Not started | Add the first row when a real project branch is created. |
+| [Mellow v3.2 outline and water patch](../tree/fix/mellow-v3-2-performance-water-outline/projects/mellow-v3.2) | [`fix/mellow-v3-2-performance-water-outline`](../tree/fix/mellow-v3-2-performance-water-outline) | Fix / optimization | Not yet confirmed; source archive's supported target must be checked | Experimental, needs in-game testing | Median-based outline detection and vanilla-textured water mode. No performance or visual fix is claimed until tested. |
 
 ## Status definitions
 
