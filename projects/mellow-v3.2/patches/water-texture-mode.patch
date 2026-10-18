@@ -1,0 +1,5 @@
+--- a/shaders/lib/settings.glsl
++++ b/shaders/lib/settings.glsl
+@@
+-#define WATER_TEXTURE_MODE 1 // [0 1 2]
++#define WATER_TEXTURE_MODE 0 // [0 1 2] // Vanilla water texture; no screen-space reflections required.
