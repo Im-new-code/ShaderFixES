@@ -1,0 +1,51 @@
+name: Shader idea or effect request
+description: Propose an original shader, visual effect, or focused improvement.
+title: "[Idea]: "
+labels: []
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Idea or effect
+      description: Describe the visual result or problem this should solve.
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: Visual references
+      description: Add image links, screenshots, or examples and explain what matters about them.
+      render: markdown
+    validations:
+      required: false
+  - type: input
+    id: target
+    attributes:
+      label: Target Minecraft version and renderer
+      placeholder: "Version, loader, shader mod / renderer"
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Performance and compatibility constraints
+      description: Include target hardware, memory limits, and desired performance if relevant.
+      render: markdown
+    validations:
+      required: false
+  - type: textarea
+    id: inspiration
+    attributes:
+      label: Inspiration, source links, and licensing notes
+      description: Credit referenced work. Do not assume other projects can be copied or redistributed.
+      render: markdown
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Final check
+      options:
+        - label: I searched existing issues and project branches for a similar idea.
+          required: true
