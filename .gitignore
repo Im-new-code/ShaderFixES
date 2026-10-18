@@ -1,0 +1,18 @@
+# Editor and operating-system noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Logs and temporary diagnostics
+*.log
+*.tmp
+hs_err_pid*
+crash-reports/
+
+# Generated shader/build output (keep source files tracked)
+build/
+out/
+.cache/
