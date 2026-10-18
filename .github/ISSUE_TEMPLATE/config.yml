@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Project documentation
+    url: https://github.com/Im-new-code/ShaderFixES#readme
+    about: Read the project workflow, testing expectations, and licensing guidance before opening an issue.
