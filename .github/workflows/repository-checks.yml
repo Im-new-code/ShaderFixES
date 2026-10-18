@@ -1,0 +1,75 @@
+name: Repository checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-repository:
+    name: Validate repository structure and YAML
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install YAML parser
+        run: python -m pip install --disable-pip-version-check PyYAML
+
+      - name: Validate issue forms and workflow YAML
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+
+          files = sorted(Path(".github").rglob("*.yml")) + sorted(Path(".github").rglob("*.yaml"))
+          if not files:
+              raise SystemExit("No GitHub YAML files found.")
+
+          errors = []
+          for path in files:
+              try:
+                  with path.open(encoding="utf-8") as handle:
+                      data = yaml.safe_load(handle)
+                  if data is None:
+                      errors.append(f"{path}: file is empty")
+              except Exception as exc:
+                  errors.append(f"{path}: {exc}")
+
+          if errors:
+              raise SystemExit("\n".join(errors))
+
+          print(f"Validated {len(files)} GitHub YAML file(s).")
+          PY
+
+      - name: Check essential project documents
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          required = [
+              "README.md",
+              "CONTRIBUTING.md",
+              "SECURITY.md",
+              "LICENSE",
+              "docs/PROJECTS.md",
+              "docs/COMPATIBILITY.md",
+              "templates/shader-project/README.md",
+              "templates/shader-project/TESTING.md",
+              ".github/PULL_REQUEST_TEMPLATE.md",
+          ]
+          missing = [path for path in required if not Path(path).is_file()]
+          if missing:
+              raise SystemExit("Missing required project files:\n" + "\n".join(missing))
+          print(f"Found all {len(required)} required project files.")
+          PY
