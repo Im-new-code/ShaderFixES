@@ -1,0 +1,5 @@
+--- a/shaders/program/deferred1.fsh
++++ b/shaders/program/deferred1.fsh
+@@
+-            Color.rgb = get_outline(Color.rgb, ScreenPos);
++            Color.rgb = get_outline(Color.rgb, ScreenPos, IsDH);
