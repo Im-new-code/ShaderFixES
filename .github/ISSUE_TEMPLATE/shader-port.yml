@@ -1,0 +1,62 @@
+name: Shader port request
+description: Track adapting a shader to another Minecraft version or rendering pipeline.
+title: "[Port]: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A port is not automatically permitted just because the source is publicly available. Include the source license and follow its terms.
+  - type: input
+    id: shader
+    attributes:
+      label: Original shader and source URL
+      placeholder: Name, version, official source
+    validations:
+      required: true
+  - type: input
+    id: source-target
+    attributes:
+      label: Source Minecraft version and rendering pipeline
+      placeholder: "Version, loader, shader mod / renderer"
+    validations:
+      required: true
+  - type: input
+    id: destination
+    attributes:
+      label: Target Minecraft version and rendering pipeline
+      placeholder: "Version, loader, shader mod / renderer"
+    validations:
+      required: true
+  - type: input
+    id: license
+    attributes:
+      label: Source license and attribution requirements
+      placeholder: "License name or link; write unknown if not found"
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Porting goal and blockers
+      description: Explain what should work on the target and any known incompatibilities.
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs, screenshots, and references
+      description: Remove private information before posting.
+      render: markdown
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Final checks
+      options:
+        - label: I checked for an existing request.
+          required: true
+        - label: I have not assumed that public availability grants redistribution rights.
+          required: true
