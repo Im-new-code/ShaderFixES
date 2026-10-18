@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">ShaderFixES — Shader Repair Workshop</title>
+  <desc id="desc">A dark technical banner with a glowing shader prism, pixel grid, and the words Repair, Create, Port, Refine.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a1020"/><stop offset=".55" stop-color="#111a32"/><stop offset="1" stop-color="#10102a"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5eead4"/><stop offset=".5" stop-color="#60a5fa"/><stop offset="1" stop-color="#c084fc"/>
+    </linearGradient>
+    <radialGradient id="halo"><stop offset="0" stop-color="#6366f1" stop-opacity=".34"/><stop offset="1" stop-color="#6366f1" stop-opacity="0"/></radialGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#9ca3af" stroke-opacity=".12" stroke-width="1"/>
+    </pattern>
+    <filter id="blur"><feGaussianBlur stdDeviation="18"/></filter>
+  </defs>
+  <rect width="1200" height="360" rx="24" fill="url(#bg)"/>
+  <rect width="1200" height="360" rx="24" fill="url(#grid)"/>
+  <circle cx="920" cy="175" r="220" fill="url(#halo)"/>
+  <circle cx="920" cy="175" r="90" fill="#8b5cf6" opacity=".18" filter="url(#blur)"/>
+  <g opacity=".5" stroke="url(#glow)" fill="none">
+    <path d="M690 58H1120M690 76H1040M690 294H1120" stroke-width="1"/>
+    <path d="M720 40V320M1140 40V320" stroke-dasharray="4 8"/>
+  </g>
+  <g transform="translate(905 176)">
+    <path d="M0 -102 88 -51 88 51 0 102 -88 51 -88 -51Z" fill="#101a36" stroke="url(#glow)" stroke-width="3"/>
+    <path d="M0 -102V0L88 51M0 0L-88 51M0 0L0 102" fill="none" stroke="url(#glow)" stroke-width="2" opacity=".8"/>
+    <path d="M0 -66 57 -33 57 33 0 66 -57 33 -57 -33Z" fill="#1d2b52" stroke="#7dd3fc" stroke-width="2"/>
+    <path d="M-30 -16 0 -34 30 -16 30 17 0 34 -30 17Z" fill="url(#glow)" opacity=".9"/>
+    <path d="M-14 -8 0 -16 14 -8 14 8 0 16 -14 8Z" fill="#f0fdfa"/>
+  </g>
+  <g fill="#dbeafe" font-family="Inter,Segoe UI,Arial,sans-serif">
+    <text x="76" y="125" font-size="22" letter-spacing="6" fill="#5eead4" font-weight="700">MINECRAFT SHADER WORKSHOP</text>
+    <text x="72" y="194" font-size="76" font-weight="800" letter-spacing="-3">ShaderFix<tspan fill="url(#glow)">ES</tspan></text>
+    <text x="78" y="237" font-size="23" fill="#b9c6e4">Repair broken effects. Build new looks. Port across versions.</text>
+    <g font-size="15" font-weight="700" letter-spacing="2">
+      <text x="78" y="292" fill="#5eead4">REPAIR</text><circle cx="163" cy="287" r="3" fill="#64748b"/>
+      <text x="182" y="292" fill="#93c5fd">CREATE</text><circle cx="274" cy="287" r="3" fill="#64748b"/>
+      <text x="294" y="292" fill="#c4b5fd">PORT</text><circle cx="358" cy="287" r="3" fill="#64748b"/>
+      <text x="379" y="292" fill="#e9d5ff">REFINE</text>
+    </g>
+  </g>
+  <g fill="#a5b4fc">
+    <rect x="1080" y="70" width="8" height="8" rx="2"/><rect x="1100" y="90" width="5" height="5" rx="1"/>
+    <rect x="760" y="250" width="6" height="6" rx="1"/><rect x="1060" y="270" width="10" height="10" rx="2"/>
+  </g>
+</svg>
