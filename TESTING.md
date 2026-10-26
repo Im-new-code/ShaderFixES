@@ -1,8 +1,8 @@
 # Testing Notes
 
-## Test run: Initial branch setup
+## Test status: No in-game test recorded
 
-- **Commit:** Pending first branch commit
+- **Commit under test:** None; no in-game run has been performed
 - **Minecraft:** Java Edition 1.17.1
 - **Loader / shader mod:** OptiFine; exact build not recorded here
 - **Renderer:** MobileGlues 4.0.0 / GLES 3.2 target
