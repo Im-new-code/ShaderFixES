@@ -30,7 +30,6 @@ void main() {
 
     vec3 glow = scene * bright * geometryMask * sourceMask;
 
-    /* DRAWBUFFERS:34 */
-    gl_FragData[0] = vec4(scene, 1.0);
-    gl_FragData[1] = vec4(glow, 1.0);
+    /* DRAWBUFFERS:3 */
+    gl_FragData[0] = vec4(glow, 1.0);
 }

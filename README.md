@@ -22,7 +22,7 @@ Pair OptiFine emissive texture overlays with a small-screen-space bloom effect f
 
 OptiFine's emissive texture feature renders an overlay at full brightness, but it **does not illuminate surrounding blocks**. Bloom is a screen-space effect and only makes already-rendered bright pixels appear to bleed softly into nearby screen pixels. References: [OptiFine emissive.properties example](https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/emissive.properties) and [OptiDocs: Emissive Textures](https://optifine.readthedocs.io/emissive_textures.html).
 
-The current bloom extraction uses a brightness threshold, a warm/cyan color heuristic, and a depth check to suppress the sky. It is intentionally light-weight, but it is **not a material-ID mask**: similarly bright pixels with matching colors elsewhere in the scene can also bloom. A future dedicated emissive mask would require more invasive G-buffer work.
+The current bloom extraction uses a brightness threshold, a warm/cyan color heuristic, and a depth check to suppress the sky. It is intentionally lightweight, but it is **not a material-ID mask**: similarly bright pixels with matching colors elsewhere in the scene can also bloom. A future dedicated emissive mask would require more invasive G-buffer work.
 
 ## Repository layout
 
@@ -43,9 +43,13 @@ The 16×16 overlays are initial stylized masks, not copied vanilla textures. UV 
 
 - No shadow map.
 - No dynamic-light pass or colored lightmap.
-- Bright-pass target and two separable blur targets are downscaled to 50% in each dimension.
-- Blur uses five taps per pass, followed by a final additive composite.
+- One custom color attachment (`colortex3`) is downscaled to 50% in each dimension and reused through OptiFine's main/alternate ping-pong buffers for bright-pass extraction and horizontal/vertical blur.
+- Five blur taps per pass, followed by a final additive composite.
 - Actual FPS and memory use remain unmeasured.
+
+## Attribution and license
+
+Shader code and overlay masks in this branch are new prototype work for this repository; no third-party shader source or vanilla texture art has been copied. A project-specific redistribution license has not been declared yet. The repository root license explicitly does not automatically license every shader-specific file, so do not treat these project files as independently licensed until the owner chooses one.
 
 ## Installation source layout
 
