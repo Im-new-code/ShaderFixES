@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.github.imnewcode.cyansky.mixin",
+  "compatibilityLevel": "JAVA_16",
+  "client": [
+    "BiomeMixin",
+    "BackgroundRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

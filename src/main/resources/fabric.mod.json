@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "cyan_sky_fog",
+  "version": "${version}",
+  "name": "Cyan Sky Fog",
+  "description": "Standalone cyan overworld sky colours and low-cost forced atmospheric fog for Minecraft 1.17.1.",
+  "environment": "client",
+  "entrypoints": {
+    "main": [
+      "io.github.imnewcode.cyansky.CyanSkyMod"
+    ]
+  },
+  "mixins": [
+    "cyan_sky.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.0",
+    "minecraft": "~1.17.1",
+    "java": ">=16"
+  }
+}
