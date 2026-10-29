@@ -1,8 +1,8 @@
 #version 120
 /*
  * Adapted from the uploaded World Outline Shader r1.0 (MIT-licensed).
- * Keep its four-corner inverse-depth slope detector for sharp outlines.
- * This copy outputs to colortex1 for DriftLite's downstream color/bloom path.
+ * Output scene color plus outlines to colortex3. colortex1 is OptiFine's
+ * depth-color attachment, so it must not be used as a scene-color buffer.
  */
 #define WORLD_OUTLINE 1 // [0 1]
 #define WORLD_OUTLINE_THICKNESS 2.0 // [1.0 2.0 3.0]
@@ -39,12 +39,13 @@ vec3 ReconstructViewPos(vec2 uv, float depth) {
     return view.xyz / safeW;
 }
 
+/* DRAWBUFFERS:3 */
 void main() {
     vec3 color = texture2D(colortex0, texcoord).rgb;
     float z0 = texture2D(depthtex0, texcoord).r;
 
-    // Sky depth maps to the far plane, where homogeneous w can be zero.
-    // Reconstruct from a finite depth to obtain a stable world-space ray.
+    // A far-plane sample can have homogeneous w=0. Use finite depth for the
+    // world ray, otherwise a broken reconstruction can spoil horizon colour.
     if (z0 >= 0.999999) {
         vec3 viewPosSky = ReconstructViewPos(texcoord, 0.9999);
         vec3 worldDir = normalize(mat3(gbufferModelViewInverse) * viewPosSky);
@@ -68,7 +69,6 @@ void main() {
     if (worldDist >= WORLD_OUTLINE_MIN_DISTANCE) {
         vec2 resolution = vec2(max(viewWidth, 1.0), max(viewHeight, 1.0));
         vec2 scale = 1.0 / resolution;
-
         vec2 texCoordDirection = sign(texcoord - vec2(0.5));
         vec2 checkCoord = texcoord + scale * vec2(
             texCoordDirection.x * WORLD_OUTLINE_THICKNESS,
