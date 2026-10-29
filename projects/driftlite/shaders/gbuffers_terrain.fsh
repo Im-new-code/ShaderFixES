@@ -1,24 +1,38 @@
 #version 120
-#define DL_FOG // Blend distant terrain into vanilla fog. Very low performance impact.
-#define DL_COLOR_TUNE // Richer daylight colour and contrast. Very low performance impact.
-#define DL_FOLIAGE_TUNE // Slightly enhance green-dominant terrain texels. Very low performance impact.
+#define DL_FOG // Blend distant terrain into vanilla fog.
+#define DL_COLOR_TUNE // Richer daylight colour and contrast.
+#define DL_FOLIAGE_TUNE // Slightly enhance green-dominant terrain texels.
+#define DL_EMISSIVE_GLOW // Keep mapped light-source blocks bright for bloom.
+#define DL_HANDHELD_LIGHTS // Add inexpensive light falloff from a held torch-like item.
 
 uniform sampler2D gtexture;
 uniform sampler2D lightmap;
 uniform float fogStart;
 uniform float fogEnd;
 uniform vec3 fogColor;
+uniform int heldBlockLightValue;
+uniform int heldBlockLightValue2;
 
 varying vec2 dlTexCoord;
 varying vec2 dlLightCoord;
 varying vec4 dlVertexColor;
 varying float dlViewDepth;
+varying float dlMaterial;
+varying vec3 dlViewPos;
 
 void main() {
     vec4 texel = texture2D(gtexture, dlTexCoord) * dlVertexColor;
     if (texel.a < 0.10) discard;
 
-    vec3 color = texel.rgb * texture2D(lightmap, dlLightCoord).rgb;
+    vec2 lightCoord = dlLightCoord;
+    #ifdef DL_HANDHELD_LIGHTS
+        float heldValue = float(max(heldBlockLightValue, heldBlockLightValue2));
+        float heldLight = max((heldValue - length(dlViewPos)) / 15.0, 0.0);
+        heldLight = pow(heldLight, 1.65);
+        lightCoord.x = max(lightCoord.x, heldLight);
+    #endif
+
+    vec3 color = texel.rgb * texture2D(lightmap, lightCoord).rgb;
 
     #ifdef DL_COLOR_TUNE
         float luminance = dot(color, vec3(0.2126, 0.7152, 0.0722));
@@ -31,6 +45,16 @@ void main() {
         float greenDominance = clamp((color.g - max(color.r, color.b)) * 2.0, 0.0, 1.0);
         color.g *= 1.0 + 0.035 * greenDominance;
         color.r *= 1.0 - 0.008 * greenDominance;
+    #endif
+
+    #ifdef DL_EMISSIVE_GLOW
+        if (abs(dlMaterial - 10008.0) < 0.5) {
+            // Self-emission only. This does not propagate coloured light to
+            // nearby blocks, so the effect remains far cheaper than GI.
+            float maxChannel = max(texel.r, max(texel.g, texel.b));
+            float emission = smoothstep(0.18, 0.78, maxChannel);
+            color = max(color, texel.rgb * (0.88 + 0.28 * emission));
+        }
     #endif
 
     #ifdef DL_FOG
