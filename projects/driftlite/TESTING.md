@@ -13,8 +13,10 @@
 - [x] Mapped emissive block treatment using block.properties.
 - [x] Heuristic glow treatment for warm/cool item texture pixels.
 - [x] Held-item light falloff using OptiFine uniforms.
+- [x] Lightmap coordinate shaping and adjustable torch falloff.
 - [x] Optional half-resolution bloom extraction/blur and profiles.
 - [x] Workflow checks expanded to cover the new files/assets.
+- [ ] Set Minecraft Clouds to Off and verify no Fast clouds appear over the custom layer.
 - [ ] OptiFine 1.17.1 option parsing and shader compilation checked.
 - [ ] MobileGlues/GLES compilation checked.
 - [ ] Flat clouds assessed for banding, orientation and time animation in-game.
