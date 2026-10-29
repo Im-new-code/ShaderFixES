@@ -9,23 +9,19 @@
 - [x] World-space sky-ray transform for Flat clouds.
 - [x] Two-sample animated 2D cloud noise.
 - [x] Depth-aware shoreline foam and blue/teal water tint.
-- [x] Projection-inverse, symmetric depth outline detector.
-- [x] Outline options: master toggle, thickness, brightness, threshold and fade distance.
+- [x] Two-scale animated water normals with soft directional glints; no reflection ray marching.
+- [x] Uploaded World Outline depth-slope method with a finite-depth sky ray and optional chunk fog.
+- [x] Outline controls for master switch, thickness, brightness, threshold, near cutoff and distance fade.
 - [x] Separate scene-outline, bloom extraction, bloom blur and final composition.
-- [x] Bloom remains optional and is disabled by the REIMAGINED preset.
 - [x] Adjustable final exposure, saturation, vibrance and contrast.
-- [x] Workflow validation covers the new program/texture files.
-
-## Still unverified in-game
 - [ ] OptiFine 1.17.1 compilation.
 - [ ] MobileGlues/GLES compilation.
 - [ ] Flat cloud stability during yaw/pitch rotation and player movement.
-- [ ] Flat-cloud blend with sun/moon and weather.
-- [ ] Shore foam on beaches, pool edges, rivers, underwater and at night.
-- [ ] Outline artifacts on leaves, transparent glass, fences, rails, entities and GUI.
-- [ ] Emissive blocks and held torch lighting.
-- [ ] Bloom threshold and half-resolution routing.
+- [ ] Water normals, foam and depth sampling on beaches, pool edges, rivers and underwater.
+- [ ] Outline artifacts on leaves, glass, fences, rails, entities and GUI.
+- [ ] Emissive blocks, dropped/held items, hand/offhand lighting.
+- [ ] Bloom routing and output brightness.
 - [ ] Overworld day/night, caves, rain, Nether and End.
-- [ ] FPS/frame-time compared in the same scene and resolution.
+- [ ] FPS/frame-time compared in identical scenes/resolution.
 
 A successful ZIP package is not proof of shader compilation, correctness, compatibility or FPS.
