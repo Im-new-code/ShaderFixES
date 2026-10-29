@@ -1,3 +1,7 @@
+option.DL_SHADOWS=Directional Shadows
+option.DL_SHADOWS.comment=Softened real-time terrain shadows. Rendering the shadow map costs additional GPU time.
+option.DL_SHADOW_STRENGTH=Shadow Strength
+option.DL_SHADOW_STRENGTH.comment=Controls how deeply the shadow map dims direct skylight on terrain.
 option.DL_FLAT_CLOUDS=Flat Clouds
 option.DL_FLAT_CLOUDS.comment=World-anchored 2D clouds with a lightweight animated noise pattern.
 option.DL_CLOUD_OPACITY=Cloud Opacity
