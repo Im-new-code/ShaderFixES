@@ -1,27 +1,30 @@
 # DriftLite: Mobile Performance Shader
 
-An independently written OptiFine-format shader prototype for Minecraft Java 1.17.1. Its visual direction takes broad inspiration from polished stylized shaders: richer daylight, controlled contrast, and atmospheric distance, while keeping the rendering path deliberately inexpensive.
+An independently written OptiFine-format shader prototype for Minecraft Java 1.17.1. Its visual direction takes broad inspiration from polished stylized shaders, while keeping the rendering path inexpensive for Android-class GPUs.
 
 - **Target:** Minecraft 1.17.1 + OptiFine 1.17.1
 - **Device target:** PojavLauncher, Android 8.1, MobileGlues, Adreno 506
-- **Status:** Early prototype. The first on-device screenshot exposed a lightmap-coordinate bug; the shader stages now use the built-in texture matrices for atlas/lightmap sampling. Runtime compilation and visual retesting remain pending.
+- **Status:** Early prototype. On-device testing is still required after each shader update.
 
-## Approach
+## Current lightweight features
+
+- Subtle saturation and contrast shaping for terrain and entities.
+- Optional enhancement of green-dominant terrain texels.
+- Optional blue-teal water tint, with no extra texture samples.
+- Optional subtle sky colour enhancement.
+- Optional distance fog using the existing fog uniforms.
+- POTATO and BALANCED profiles, plus individual toggles under Shader Options.
+
+These effects are intentionally simple. There are no shadow maps, SSAO, SSR, bloom, volumetric effects, temporal post-processing, or colored dynamic lighting.
+
+## Inspiration and licensing
+
 This project does not copy Complementary Reimagined source or redistribute its files. It uses aesthetic inspiration only and implements a separate minimal pipeline from original code. Upstream reference: https://github.com/ComplementaryDevelopment/ComplementaryReimagined
 
-First-stage trade-offs: no shadow maps, SSAO, SSR, bloom, volumetric effects, or temporal post-processing. The initial version focuses on low pass count, correctly transformed vanilla texture/lightmap coordinates, an optional restrained color treatment, and low-cost distance fog.
+Original DriftLite source is MIT licensed in `LICENSE.txt`. This project is independent and not affiliated with or endorsed by Complementary Development.
 
-## Build
-The `DriftLite shader package` GitHub Actions workflow validates required source files and packages `shaders/` into a ZIP artifact. Download the artifact from the workflow run and place the ZIP in `.minecraft/shaderpacks/`, then select it under Options → Video Settings → Shaders.
+## Build and test status
 
-## Verification
-- Source structure: included in workflow checks.
-- OptiFine compilation: **Not tested**.
-- MobileGlues compatibility: **Not tested**.
-- Visual correctness after coordinate fix: **Needs device retest**.
-- FPS/frame time: **Not measured**.
+The GitHub Actions workflow packages `shaders/` into a ZIP artifact. Packaging success only verifies the source-file structure and ZIP creation. It is not proof of OptiFine compilation or MobileGlues compatibility.
 
-Packaging success is not proof of shader compilation or performance on-device. Report the first shader compile error from `latest.log` if it fails.
-
-## License
-Original DriftLite source is MIT licensed in `LICENSE.txt`. No Complementary shader code, assets, or license file are included. This project is independent and not affiliated with or endorsed by Complementary Development.
+After installation, test day/night, water, foliage, entities, weather, the Nether, and the End. Compare FPS in the same scene and at the same resolution before claiming a performance result.

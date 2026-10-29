@@ -1,6 +1,6 @@
 #version 120
-#define DL_FOG 1
-#define DL_COLOR_TUNE 1
+#define DL_FOG // Blend distant entities into vanilla fog. Very low performance impact.
+#define DL_COLOR_TUNE // Richer colour and contrast on entities. Very low performance impact.
 
 uniform sampler2D gtexture;
 uniform sampler2D lightmap;
@@ -19,13 +19,14 @@ void main() {
 
     vec3 color = texel.rgb * texture2D(lightmap, dlLightCoord).rgb;
 
-    #if DL_COLOR_TUNE == 1
-        vec3 warmer = color * vec3(1.075, 1.045, 1.010);
-        color = mix(color, warmer, 0.60);
-        color = max((color - vec3(0.5)) * 1.06 + vec3(0.5), vec3(0.0));
+    #ifdef DL_COLOR_TUNE
+        float luminance = dot(color, vec3(0.2126, 0.7152, 0.0722));
+        color = mix(vec3(luminance), color, 1.08);
+        color *= vec3(1.030, 1.018, 1.000);
+        color = max((color - vec3(0.5)) * 1.045 + vec3(0.5), vec3(0.0));
     #endif
 
-    #if DL_FOG == 1
+    #ifdef DL_FOG
         float startDistance = max(fogStart, 0.0);
         float endDistance = max(fogEnd, startDistance + 1.0);
         float fogAmount = clamp((max(dlViewDepth, 0.0) - startDistance) / (endDistance - startDistance), 0.0, 1.0);
