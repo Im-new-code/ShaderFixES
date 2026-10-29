@@ -6,17 +6,22 @@
 - PojavLauncher / MobileGlues
 - Android 8.1 / Qualcomm Adreno 506 / OPPO A3s
 
-## Implemented features
-- [x] Terrain/entity colour tuning.
-- [x] Green-dominant terrain tint option.
-- [x] Water tint option.
-- [x] Sky colour option.
-- [x] Lightweight horizon haze option.
-- [x] POTATO/BALANCED profiles and visual/performance option screens.
-- [ ] OptiFine option parsing and shader compilation verified on target version.
-- [ ] MobileGlues verified.
-- [ ] Day/night, caves, water, weather, Nether and End tested.
-- [ ] Player hand, entities, particles and block entities tested.
-- [ ] FPS/frame-time measured against vanilla and previous build in the same scene.
+## Source features added
+- [x] Terrain/entity colour tuning and foliage tint.
+- [x] Water tint and sky/horizon haze options.
+- [x] Mellow-style 2D Flat cloud layer with a credited MIT noise asset.
+- [x] Mapped emissive block treatment using block.properties.
+- [x] Heuristic glow treatment for warm/cool item texture pixels.
+- [x] Held-item light falloff using OptiFine uniforms.
+- [x] Optional half-resolution bloom extraction/blur and profiles.
+- [x] Workflow checks expanded to cover the new files/assets.
+- [ ] OptiFine 1.17.1 option parsing and shader compilation checked.
+- [ ] MobileGlues/GLES compilation checked.
+- [ ] Flat clouds assessed for banding, orientation and time animation in-game.
+- [ ] Torches, lanterns, glowstone, lava and emissive items assessed in-game.
+- [ ] Main-hand/off-hand light falloff assessed in-game.
+- [ ] Bloom artifacts/brightness and framebuffer routing checked in-game.
+- [ ] Day/night, rain, caves, water, Nether and End tested.
+- [ ] FPS/frame time measured against vanilla and prior build in the same scene/resolution.
 
-Do not mark untested items as passed. A successful ZIP package is not proof of shader compilation or device performance.
+A successful ZIP package is not proof of shader compilation, correctness, compatibility or performance on the target phone.

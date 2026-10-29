@@ -22,6 +22,7 @@ jobs:
           root = Path("projects/driftlite/shaders")
           required = [
               "shaders.properties",
+              "block.properties",
               "gbuffers_terrain.vsh", "gbuffers_terrain.fsh",
               "gbuffers_entities.vsh", "gbuffers_entities.fsh",
               "gbuffers_textured.vsh", "gbuffers_textured.fsh",
@@ -32,18 +33,23 @@ jobs:
               "gbuffers_water.vsh", "gbuffers_water.fsh",
               "gbuffers_weather.vsh", "gbuffers_weather.fsh",
               "gbuffers_hand.vsh", "gbuffers_hand.fsh",
+              "composite.vsh", "composite.fsh",
+              "composite2.vsh", "composite2.fsh",
+              "final.vsh", "final.fsh",
+              "lib/driftlite-cloud-noise.png",
+              "lib/MELLOW_MIT_NOTICE.txt",
           ]
           missing = [name for name in required if not (root / name).is_file()]
           if missing:
               raise SystemExit("Missing shader files: " + ", ".join(missing))
-          for path in root.glob("*"):
+          for path in root.rglob("*"):
               if path.suffix in {".vsh", ".fsh"}:
                   source = path.read_text(encoding="utf-8")
                   if "#version 120" not in source:
                       raise SystemExit(f"{path}: expected GLSL 1.20")
                   if source.count("{") != source.count("}"):
                       raise SystemExit(f"{path}: unbalanced braces")
-          print("Shader source structure checks passed.")
+          print("Shader source structure checks passed. Runtime compilation is not tested here.")
           PY
       - name: Package shader ZIP
         run: |

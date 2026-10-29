@@ -1,29 +1,33 @@
 # DriftLite: Mobile Performance Shader
 
-An independently written OptiFine-format shader prototype for Minecraft Java 1.17.1. It takes broad aesthetic inspiration from polished stylized shaders while keeping the rendering path inexpensive for Android-class GPUs.
+An independently maintained OptiFine-format shader experiment for Minecraft Java 1.17.1, aimed at PojavLauncher, MobileGlues, Android 8.1 and the Adreno 506. The visual target is a Complementary Reimagined-like Minecraft style, but the rendering path is deliberately much lighter.
 
-- **Target:** Minecraft 1.17.1 + OptiFine 1.17.1
-- **Device target:** PojavLauncher, Android 8.1, MobileGlues, Adreno 506
-- **Status:** Early prototype. Runtime compilation and on-device testing remain necessary.
+## Features in this prototype
 
-## Lightweight visual features
+- Lightweight Flat-style clouds rendered as a 2D animated noise layer in the sky pass. The noise texture is reused under the MIT license, with attribution in `shaders/lib/MELLOW_MIT_NOTICE.txt`.
+- Optional cloud amount, opacity and speed controls.
+- Existing subtle terrain/entity colour treatment, green-dominant terrain tint, water tint, sky tuning and horizon haze.
+- Emissive treatment for mapped light-source blocks using `block.properties`.
+- Heuristic glow enhancement for vivid warm/cool pixels on item/entity textures.
+- An inexpensive held-item light falloff using OptiFine's held block-light uniforms.
+- Optional two-stage half-resolution bloom. Bloom has a bright-pixel extraction stage and a 9-tap blur stage; Potato disables those passes.
+- POTATO and BALANCED profiles and individual Shader Options controls.
 
-- Subtle colour saturation and contrast adjustment for terrain and entities.
-- Small boost to green-dominant terrain texels.
-- Optional blue-teal water tint without additional texture samples.
-- Optional richer vanilla sky colour.
-- Optional sky-height-based horizon haze using sky/fog colours.
-- Optional distance fog using existing fog uniforms.
-- POTATO and BALANCED profiles and individual Shader Options toggles.
+The custom Flat cloud sheet replaces vanilla clouds while this pack is active. Minecraft's clouds are disabled via shader properties to avoid drawing Fast clouds over the custom layer.
 
-Fast clouds remain vanilla. There are no shadow maps, SSAO, SSR, bloom, volumetric effects, temporal post-processing, or coloured dynamic lighting.
+## Important limitations
+
+- “Emissive” means the source block/item appears bright and can bloom; it does not create true coloured light propagation onto surrounding blocks.
+- Item glow is a colour/brightness heuristic. Some bright warm or blue texture pixels may also be enhanced.
+- The handheld lighting approximation uses the existing held-light value and distance. It is not real-time dynamic shadowing.
+- There are no shadow maps, SSAO, SSR, volumetric effects or temporal post-processing in this lightweight baseline.
 
 ## Inspiration and licensing
 
-This project does not copy Complementary Reimagined source or redistribute its files. It uses aesthetic inspiration only and implements a separate minimal pipeline from original code. Upstream reference: https://github.com/ComplementaryDevelopment/ComplementaryReimagined
+DriftLite's broad visual direction is inspired by the style of Complementary Reimagined, but no Complementary source or assets are copied. This is not an official Complementary project.
 
-Original DriftLite source is MIT licensed in `LICENSE.txt`. This project is independent and not affiliated with or endorsed by Complementary Development.
+Mellow's MIT-licensed cloud noise asset is attributed in the included notice. The flat cloud shader integration is a separate DriftLite implementation. Sildur's Enhanced Default is All Rights Reserved; none of its shader source is copied. Glow and handheld-light behavior are independently implemented from feature-level observation.
 
-## Build and testing
+## Build and test
 
-The GitHub Actions workflow validates the source structure and creates a shader ZIP artifact. Packaging success is not proof of OptiFine compilation, MobileGlues compatibility, appearance, or FPS. Test day/night, caves, water, foliage, weather, Nether and End before reporting compatibility or performance results.
+GitHub Actions checks required files, GLSL version tags, brace balance, and creates a ZIP artifact. It does not compile the shaders in OptiFine or MobileGlues. Runtime appearance and FPS are unverified until tested on the target device. Compare frame rates in the same scene, resolution and settings before claiming performance results.
