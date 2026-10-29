@@ -1,5 +1,5 @@
 #version 120
-#define DL_SKY_TUNE // Gentle warm tint for the sun, strongest near the horizon.
+#define DL_SKY_TUNE // Reduce the harsh white sun and give bright sky sprites a soft warm tint.
 
 uniform sampler2D gtexture;
 uniform vec3 sunPosition;
@@ -21,15 +21,23 @@ void main() {
         vec3 worldRay = normalize(mat3(gbufferModelViewInverse) * (viewPoint.xyz / safeW));
         vec3 worldSun = normalize(mat3(gbufferModelViewInverse) * sunPosition);
 
-        // Restrict the colour shift to the sun's direction. The moon lies on
-        // the opposite side of the sky and remains close to its vanilla colour.
         float sunAlignment = dot(worldRay, worldSun);
-        float sunDisk = smoothstep(0.993, 0.9995, sunAlignment);
+        float directionalSun = smoothstep(0.955, 0.994, sunAlignment);
+
+        // Some OptiFine/GLES combinations do not align the inverse sky matrices
+        // exactly with the textured sun quad. Use a bright, near-white fallback
+        // so the disk is still toned down rather than rendering as a blown-out tile.
+        float brightest = max(color.r, max(color.g, color.b));
+        float darkest = min(color.r, min(color.g, color.b));
+        float brightWhite = smoothstep(0.62, 0.92, darkest)
+                          * smoothstep(0.22, 0.62, brightest);
+        float sunMask = max(directionalSun, brightWhite * 0.88);
         float lowSun = 1.0 - smoothstep(0.08, 0.60, abs(worldSun.y));
-        vec3 neutralWarmth = vec3(1.0, 0.94, 0.84);
-        vec3 horizonWarmth = vec3(1.0, 0.79, 0.57);
+        vec3 neutralWarmth = vec3(1.0, 0.91, 0.78);
+        vec3 horizonWarmth = vec3(1.0, 0.79, 0.58);
         vec3 warmTint = mix(neutralWarmth, horizonWarmth, lowSun * 0.75);
-        color.rgb *= mix(vec3(1.0), warmTint, sunDisk * 0.90);
+        vec3 softenedSun = color.rgb * warmTint * 0.84;
+        color.rgb = mix(color.rgb, softenedSun, clamp(sunMask, 0.0, 1.0));
     #endif
 
     gl_FragColor = color;

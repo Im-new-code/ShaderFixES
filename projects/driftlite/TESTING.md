@@ -7,9 +7,9 @@
 
 ## Implemented source features
 - [x] World-space per-pixel sky-ray reconstruction for the sky gradient and horizon haze.
-- [x] World-anchored flat-cloud plane intersection with bounded horizon projection and horizon fade.
+- [x] Angular world-ray cloud mapping to avoid high-derivative plane-projection streaks.
 - [x] Animated 2D cloud shape with separate low-frequency coverage and higher-frequency detail noise.
-- [x] Low-sun warmth limited to the sun's viewing direction.
+- [x] Sun sprite dimming and warm tint with a bright-pixel fallback for imperfect sky-matrix alignment.
 - [x] Depth-aware shoreline foam and blue/teal water tint.
 - [x] Two-scale animated water normals with soft directional glints; no reflection ray marching.
 - [x] Uploaded World Outline depth-slope method with a finite-depth sky ray and optional chunk fog.
@@ -19,8 +19,8 @@
 - [x] Adjustable final exposure, saturation, vibrance and contrast.
 - [ ] OptiFine 1.17.1 compilation.
 - [ ] MobileGlues/GLES compilation.
-- [ ] Flat-cloud stability during yaw/pitch rotation and player movement.
-- [ ] Sky sun alignment and sunset tint in game.
+- [ ] Verify angular cloud stability across yaw/pitch rotation and player movement.
+- [ ] Verify softened sun, cloud coverage, and horizon gradient in game.
 - [ ] Water normals, foam and depth sampling on beaches, pool edges, rivers and underwater.
 - [ ] Outline artifacts on leaves, glass, fences, rails, entities and GUI.
 - [ ] Emissive blocks, dropped/held items, hand/offhand lighting.

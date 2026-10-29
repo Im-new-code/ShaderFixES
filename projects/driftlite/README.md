@@ -4,7 +4,7 @@ DriftLite is an independent OptiFine-format shader experiment for Minecraft Java
 
 ## Current feature work
 
-- World-space, Mellow-style Flat clouds using animated 2D noise.
+- Angularly projected, animated low-cost cloud layer tuned to avoid horizon streaking on mobile.
 - Water tint, animated noise-based ripple normals and direct-light glints without reflections.
 - Broken depth-aware shoreline foam.
 - Uploaded World Outline Shader depth-slope method and finite-depth sky-ray reconstruction.
@@ -22,7 +22,7 @@ GitHub Actions packaging does not compile the shader inside OptiFine or emulate 
 
 ## Latest visual correction
 
-The sky shader now reconstructs a world-space viewing ray per fragment from screen coordinates and the inverse projection/view matrices instead of interpolating the sky mesh vertex direction. This is intended to prevent wide radial cloud streaks when the previous sky geometry interpolant did not represent the per-pixel camera ray. World outlines are now disabled in the BALANCED and REIMAGINED profiles by default because strong screen-space edge highlights are not part of the desired Complementary-like style; the outline control remains available for users who want it.
+The sky shader reconstructs a world-space viewing ray per fragment. After in-game screenshots showed streaking from the plane projection, cloud sampling was changed to angular world-ray coordinates, with lower-derivative noise warping and a smoother horizon fade. This trades exact infinite-plane perspective for more stable cloud shapes on mobile. World outlines are now disabled in the BALANCED and REIMAGINED profiles by default because strong screen-space edge highlights are not part of the desired Complementary-like style; the outline control remains available for users who want it.
 
 
 ## Directional lighting update
