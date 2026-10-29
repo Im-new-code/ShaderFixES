@@ -1,9 +1,8 @@
 #version 120
 /*
- * DriftLite outline pass adapted from the uploaded World Outline Shader r1.0.
- * Keep the original four-corner depth slope detector that the pack uses to
- * obtain sharp edges. Output is redirected to colortex1 for the following
- * final/bloom pipeline.
+ * Adapted from the uploaded World Outline Shader r1.0 (MIT-licensed).
+ * Keep its four-corner inverse-depth slope detector for sharp outlines.
+ * This copy outputs to colortex1 for DriftLite's downstream color/bloom path.
  */
 #define WORLD_OUTLINE 1 // [0 1]
 #define WORLD_OUTLINE_THICKNESS 2.0 // [1.0 2.0 3.0]
@@ -36,17 +35,18 @@ float GetLinearDepth(float depth) {
 vec3 ReconstructViewPos(vec2 uv, float depth) {
     vec4 ndc = vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
     vec4 view = gbufferProjectionInverse * ndc;
-    return view.xyz / max(abs(view.w), 0.000001) * sign(view.w);
+    float safeW = abs(view.w) < 0.000001 ? (view.w < 0.0 ? -0.000001 : 0.000001) : view.w;
+    return view.xyz / safeW;
 }
 
 void main() {
     vec3 color = texture2D(colortex0, texcoord).rgb;
     float z0 = texture2D(depthtex0, texcoord).r;
 
-    // Sky pass-through plus subtle horizon haze. Never run the edge detector
-    // against depth-1 sky pixels, which caused broad outlines around sky gaps.
+    // Sky depth maps to the far plane, where homogeneous w can be zero.
+    // Reconstruct from a finite depth to obtain a stable world-space ray.
     if (z0 >= 0.999999) {
-        vec3 viewPosSky = ReconstructViewPos(texcoord, z0);
+        vec3 viewPosSky = ReconstructViewPos(texcoord, 0.9999);
         vec3 worldDir = normalize(mat3(gbufferModelViewInverse) * viewPosSky);
         float horizonFactor = 1.0 - clamp(abs(worldDir.y), 0.0, 1.0);
         horizonFactor = horizonFactor * horizonFactor * horizonFactor;
@@ -59,11 +59,9 @@ void main() {
 
     vec3 viewPos = ReconstructViewPos(texcoord, z0);
     float worldDist = length(viewPos);
-
     float z1 = texture2D(depthtex1, texcoord).r;
     vec3 worldPos = (gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz + cameraPosition;
     bool isCloud = (z1 >= 0.9999) && (worldPos.y > 75.0);
-
     float linearZ0 = GetLinearDepth(z0);
 
 #if WORLD_OUTLINE
@@ -88,7 +86,6 @@ void main() {
         if (outlineMult > 0.0001) {
             outlineMult *= 0.25;
             vec2 o = scale * WORLD_OUTLINE_THICKNESS;
-
             float r0 = 1.0 / GetLinearDepth(texture2D(depthtex0, texcoord + vec2(-o.x, -o.y)).r);
             float r1 = 1.0 / GetLinearDepth(texture2D(depthtex0, texcoord + vec2(-o.x,  o.y)).r);
             float r2 = 1.0 / GetLinearDepth(texture2D(depthtex0, texcoord + vec2( o.x, -o.y)).r);
@@ -111,9 +108,7 @@ void main() {
     if (!isCloud) {
         float refDist = renderDistance > 1.0 ? renderDistance * 16.0 : far;
         refDist = clamp(refDist, 32.0, 1024.0);
-        float fStart = refDist * 0.55;
-        float fEnd = refDist * 0.95;
-        float fogFactor = smoothstep(fStart, fEnd, worldDist) * DL_CHUNK_FOG_STRENGTH;
+        float fogFactor = smoothstep(refDist * 0.55, refDist * 0.95, worldDist) * DL_CHUNK_FOG_STRENGTH;
         vec3 fCol = fogColor;
         if (dot(fCol, vec3(1.0)) < 0.01) fCol = vec3(0.62, 0.76, 0.94);
         color = mix(color, fCol, fogFactor);

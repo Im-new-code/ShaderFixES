@@ -38,6 +38,7 @@ jobs:
               "final.vsh", "final.fsh",
               "lib/driftlite-cloud-noise.png",
               "lib/MELLOW_MIT_NOTICE.txt",
+              "lib/WORLD_OUTLINE_NOTICE.txt",
           ]
           missing = [name for name in required if not (root / name).is_file()]
           if missing:
