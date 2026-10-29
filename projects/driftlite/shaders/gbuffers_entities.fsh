@@ -1,6 +1,8 @@
 #version 120
 #define DL_FOG // Blend distant entities into vanilla fog.
 #define DL_COLOR_TUNE // Richer colour and contrast on entities.
+#define DL_WORLD_LIGHTING // Subtly reshape lightmap response.
+#define DL_LIGHT_FALLOFF 1.35 // [1.0 1.15 1.25 1.35 1.5 1.65 1.85 2.1 2.4]
 #define DL_HANDHELD_LIGHTS // Add inexpensive light falloff from held light sources.
 #define DL_ITEM_GLOW // Heuristic emission for vivid torch/lava-like item textures.
 
@@ -23,12 +25,17 @@ void main() {
     if (texel.a < 0.10) discard;
 
     vec2 lightCoord = dlLightCoord;
+    #ifdef DL_WORLD_LIGHTING
+        lightCoord = max(lightCoord * 1.06667 - vec2(0.0625), vec2(0.0));
+        lightCoord.x = pow(max(lightCoord.x, 0.0), DL_LIGHT_FALLOFF);
+    #endif
     #ifdef DL_HANDHELD_LIGHTS
         float heldValue = float(max(heldBlockLightValue, heldBlockLightValue2));
         float heldLight = max((heldValue - length(dlViewPos)) / 15.0, 0.0);
         heldLight = pow(heldLight, 1.65);
         lightCoord.x = max(lightCoord.x, heldLight);
     #endif
+
     vec3 color = texel.rgb * texture2D(lightmap, lightCoord).rgb;
 
     #ifdef DL_COLOR_TUNE
