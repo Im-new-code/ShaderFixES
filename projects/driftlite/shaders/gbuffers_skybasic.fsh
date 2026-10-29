@@ -12,6 +12,7 @@ uniform float rainStrength;
 uniform vec3 cameraPosition;
 uniform vec3 fogColor;
 uniform vec3 skyColor;
+uniform vec3 sunPosition;
 uniform float viewWidth;
 uniform float viewHeight;
 uniform mat4 gbufferProjectionInverse;
@@ -21,8 +22,7 @@ varying vec4 dlVertexColor;
 
 vec3 DL_GetWorldRay() {
     vec2 screenUV = gl_FragCoord.xy / vec2(max(viewWidth, 1.0), max(viewHeight, 1.0));
-    // Reconstruct a finite point on the view ray, then remove camera rotation.
-    vec4 viewPoint = gbufferProjectionInverse * vec4(screenUV * 2.0 - 1.0, -0.85, 1.0);
+    vec4 viewPoint = gbufferProjectionInverse * vec4(screenUV * 2.0 - 1.0, -0.50, 1.0);
     float safeW = abs(viewPoint.w) < 0.000001 ? (viewPoint.w < 0.0 ? -0.000001 : 0.000001) : viewPoint.w;
     return normalize(mat3(gbufferModelViewInverse) * (viewPoint.xyz / safeW));
 }
@@ -46,29 +46,40 @@ void main() {
     #endif
 
     #ifdef DL_FLAT_CLOUDS
-        if (ray.y > 0.005) {
-            // Direction-to-plane projection with a bounded denominator.
-            // Sampling a reconstructed per-pixel world ray avoids the broad
-            // view-interpolated radial streaks seen in the previous build.
-            float horizontal = length(ray.xz);
-            float denominator = max(ray.y + horizontal / 6.0, 0.08);
-            vec2 cloudPos = ray.xz / denominator;
-            cloudPos += cameraPosition.xz / 512.0;
-            cloudPos += vec2(frameTimeCounter * 0.010, frameTimeCounter * 0.006) * DL_CLOUD_SPEED;
-            cloudPos *= 32.0;
+        if (ray.y > 0.015) {
+            /*
+             * Intersect the view ray with a horizontal cloud plane. The cloud
+             * coordinates are anchored to world XZ, so turning the camera does
+             * not rotate a radial noise pattern around the centre of the screen.
+             * A lower bound protects the horizon from huge texture derivatives;
+             * the matching horizon fade hides the clamp before it becomes visible.
+             */
+            float planeDistance = 128.0 / max(ray.y, 0.10);
+            vec2 cloudWorldPos = cameraPosition.xz + ray.xz * planeDistance;
+            vec2 drift = vec2(frameTimeCounter * 0.0050,
+                              frameTimeCounter * 0.0032) * DL_CLOUD_SPEED;
+            vec2 cloudUV = cloudWorldPos / 1024.0 + drift;
 
-            float baseNoise = texture2D(noisetex, cloudPos / 255.0).r;
-            float detailNoise = texture2D(noisetex, cloudPos / 51.0).r;
-            float noiseValue = max(baseNoise - detailNoise * 0.08, 0.0);
-            float amount = DL_CLOUD_AMOUNT + rainStrength * 0.18;
-            float formation = smoothstep(0.0, 0.40, noiseValue - 0.60 + amount);
-            float density = noiseValue * formation * smoothstep(0.0, 0.20, ray.y);
-            float cloudAlpha = clamp(1.0 - exp(-density * 1.35 * DL_CLOUD_OPACITY), 0.0, 0.82);
+            float baseNoise = texture2D(noisetex, cloudUV).r;
+            float detailNoise = texture2D(noisetex, cloudUV * 3.15 - drift * 0.45).r;
+            float cloudShape = baseNoise * 0.80 + detailNoise * 0.20;
 
-            vec3 cloudShadow = vec3(0.58, 0.64, 0.73);
-            vec3 cloudLit = vec3(0.94, 0.965, 0.99);
-            vec3 cloudColor = mix(cloudShadow, cloudLit, smoothstep(0.24, 0.72, baseNoise));
-            cloudColor = mix(cloudColor, fogColor, rainStrength * 0.40);
+            float amount = clamp(DL_CLOUD_AMOUNT + rainStrength * 0.10, 0.0, 0.90);
+            float edge = 0.70 - amount * 0.35;
+            float coverage = smoothstep(edge - 0.12, edge + 0.11, cloudShape);
+            float horizonFade = smoothstep(0.045, 0.26, ray.y);
+            float cloudAlpha = clamp(coverage * horizonFade * DL_CLOUD_OPACITY
+                                     * mix(0.96, 1.08, rainStrength), 0.0, 0.84);
+
+            vec3 sunDir = normalize(mat3(gbufferModelViewInverse) * sunPosition);
+            float sunFacing = pow(max(dot(ray, sunDir), 0.0), 1.5);
+            float cloudShade = clamp(0.54
+                + smoothstep(0.35, 0.78, baseNoise) * 0.27
+                + sunFacing * 0.19, 0.0, 1.0);
+            vec3 cloudShadow = vec3(0.57, 0.63, 0.72);
+            vec3 cloudLit = vec3(0.96, 0.975, 0.995);
+            vec3 cloudColor = mix(cloudShadow, cloudLit, cloudShade);
+            cloudColor = mix(cloudColor, fogColor, rainStrength * 0.42);
             color.rgb = mix(color.rgb, cloudColor, cloudAlpha);
         }
     #endif

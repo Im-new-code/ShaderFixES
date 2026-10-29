@@ -6,17 +6,21 @@
 - Android 8.1 / Qualcomm Adreno 506 / OPPO A3s
 
 ## Implemented source features
-- [x] World-space sky-ray transform for Flat clouds.
-- [x] Two-sample animated 2D cloud noise.
+- [x] World-space per-pixel sky-ray reconstruction for the sky gradient and horizon haze.
+- [x] World-anchored flat-cloud plane intersection with bounded horizon projection and horizon fade.
+- [x] Animated 2D cloud shape with separate low-frequency coverage and higher-frequency detail noise.
+- [x] Low-sun warmth limited to the sun's viewing direction.
 - [x] Depth-aware shoreline foam and blue/teal water tint.
 - [x] Two-scale animated water normals with soft directional glints; no reflection ray marching.
 - [x] Uploaded World Outline depth-slope method with a finite-depth sky ray and optional chunk fog.
 - [x] Outline controls for master switch, thickness, brightness, threshold, near cutoff and distance fade.
 - [x] Separate scene-outline, bloom extraction, bloom blur and final composition.
+- [x] Bloom extraction uses both peak brightness and luminance to reduce broad blue-sky bloom.
 - [x] Adjustable final exposure, saturation, vibrance and contrast.
 - [ ] OptiFine 1.17.1 compilation.
 - [ ] MobileGlues/GLES compilation.
-- [ ] Flat cloud stability during yaw/pitch rotation and player movement.
+- [ ] Flat-cloud stability during yaw/pitch rotation and player movement.
+- [ ] Sky sun alignment and sunset tint in game.
 - [ ] Water normals, foam and depth sampling on beaches, pool edges, rivers and underwater.
 - [ ] Outline artifacts on leaves, glass, fences, rails, entities and GUI.
 - [ ] Emissive blocks, dropped/held items, hand/offhand lighting.
@@ -24,4 +28,4 @@
 - [ ] Overworld day/night, caves, rain, Nether and End.
 - [ ] FPS/frame-time compared in identical scenes/resolution.
 
-A successful ZIP package is not proof of shader compilation, correctness, compatibility or FPS.
+A successful ZIP package is not proof of shader compilation, correctness, compatibility or FPS. The CI job checks source structure and packaging only unless a GLSL compiler step explicitly passes.
