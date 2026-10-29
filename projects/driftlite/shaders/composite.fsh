@@ -21,17 +21,23 @@ float ReconstructDistance(vec2 uv, float depth) {
     return length(p.xyz / max(abs(p.w), 0.00001));
 }
 
+float DepthEdge(vec2 uv, float centerDistance) {
+    vec2 safeUV = clamp(uv, vec2(0.001), vec2(0.999));
+    float sampleDepth = texture2D(depthtex0, safeUV).r;
+    float sampleDistance = ReconstructDistance(safeUV, sampleDepth);
+    if (sampleDistance > 1e5) return 1.0;
+    return abs(sampleDistance - centerDistance) / max(centerDistance, 1.0);
+}
+
 /* DRAWBUFFERS:1 */
 void main() {
     vec3 color = texture2D(colortex0, texcoord).rgb;
     float centerDepth = texture2D(depthtex0, texcoord).r;
 
-    // Keep sky pixels free of geometry outlines. Blend a small haze band to
-    // reduce the hard terrain/sky seam, using the inverse view rotation.
     if (centerDepth >= 0.999999) {
-        vec4 viewPos = gbufferProjectionInverse * vec4(texcoord * 2.0 - 1.0, 1.0, 1.0);
-        vec3 worldDir = normalize(mat3(gbufferModelViewInverse) * normalize(viewPos.xyz / max(abs(viewPos.w), 0.00001)));
-        float horizon = pow(clamp(1.0 - abs(worldDir.y), 0.0, 1.0), 3.0);
+        vec4 skyView = gbufferProjectionInverse * vec4(texcoord * 2.0 - 1.0, 1.0, 1.0);
+        vec3 skyDir = normalize(mat3(gbufferModelViewInverse) * normalize(skyView.xyz));
+        float horizon = pow(clamp(1.0 - abs(skyDir.y), 0.0, 1.0), 3.0);
         vec3 haze = fogColor;
         if (dot(haze, vec3(1.0)) < 0.01) haze = vec3(0.62, 0.76, 0.94);
         color = mix(color, haze, horizon * 0.20);
@@ -46,40 +52,24 @@ void main() {
             vec2 px = vec2(1.0 / max(viewWidth, 1.0), 1.0 / max(viewHeight, 1.0)) * WORLD_OUTLINE_THICKNESS;
             float edgeSignal = 0.0;
 
-            // Symmetric sampling avoids the directional bias and edge wash
-            // of the older corner-only outline detector.
-            vec2 offsets[8];
-            offsets[0] = vec2( 1.0, 0.0);
-            offsets[1] = vec2(-1.0, 0.0);
-            offsets[2] = vec2( 0.0, 1.0);
-            offsets[3] = vec2( 0.0,-1.0);
-            offsets[4] = vec2( 1.0, 1.0);
-            offsets[5] = vec2(-1.0, 1.0);
-            offsets[6] = vec2( 1.0,-1.0);
-            offsets[7] = vec2(-1.0,-1.0);
+            // Explicit taps avoid dynamic array indexing on mobile GLSL drivers.
+            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2( px.x, 0.0), centerDistance));
+            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2(-px.x, 0.0), centerDistance));
+            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2(0.0,  px.y), centerDistance));
+            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2(0.0, -px.y), centerDistance));
+            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2( px.x,  px.y), centerDistance));
+            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2(-px.x,  px.y), centerDistance));
+            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2( px.x, -px.y), centerDistance));
+            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2(-px.x, -px.y), centerDistance));
 
-            for (int i = 0; i < 8; ++i) {
-                vec2 sampleUV = clamp(texcoord + offsets[i] * px, vec2(0.001), vec2(0.999));
-                float sampleDepth = texture2D(depthtex0, sampleUV).r;
-                float sampleDistance = ReconstructDistance(sampleUV, sampleDepth);
-                float relativeDifference;
-                if (sampleDistance > 1e5) {
-                    relativeDifference = 1.0;
-                } else {
-                    relativeDifference = abs(sampleDistance - centerDistance) / max(centerDistance, 1.0);
-                }
-                edgeSignal = max(edgeSignal, relativeDifference);
-            }
+            float low = 0.0015 * WORLD_OUTLINE_THRESHOLD;
+            float high = 0.0060 * WORLD_OUTLINE_THRESHOLD;
+            float edge = smoothstep(low, high, edgeSignal);
+            float fade = 1.0 - smoothstep(WORLD_OUTLINE_DISTANCE_FADE * 0.70,
+                                          WORLD_OUTLINE_DISTANCE_FADE,
+                                          centerDistance);
+            float outline = edge * fade * WORLD_OUTLINE_I;
 
-            float thresholdLow = 0.0015 * WORLD_OUTLINE_THRESHOLD;
-            float thresholdHigh = 0.0060 * WORLD_OUTLINE_THRESHOLD;
-            float edge = smoothstep(thresholdLow, thresholdHigh, edgeSignal);
-            float distanceFade = 1.0 - smoothstep(WORLD_OUTLINE_DISTANCE_FADE * 0.70,
-                                                  WORLD_OUTLINE_DISTANCE_FADE,
-                                                  centerDistance);
-            float outline = edge * distanceFade * WORLD_OUTLINE_I;
-
-            // Hue-preserving highlight rather than a black ink border.
             color += min(color * outline * 0.38, vec3(outline * 0.22));
         }
     #endif

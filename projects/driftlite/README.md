@@ -1,37 +1,35 @@
-# DriftLite: Mobile Performance Shader
+# DriftLite: Mellow-based techniques, Complementary-inspired look
 
-An independently maintained OptiFine-format shader experiment for Minecraft Java 1.17.1, aimed at PojavLauncher, MobileGlues, Android 8.1 and the Adreno 506. The visual target is a Complementary Reimagined-like Minecraft style, but the rendering path is deliberately much lighter.
+DriftLite is a separate OptiFine-format shader experiment for Minecraft Java 1.17.1, focused first on correct rendering and a polished visual style. The target runtime is PojavLauncher + OptiFine + MobileGlues on Android 8.1 / Adreno 506, but the pack still needs on-device shader compilation and visual verification.
 
-## Features in this prototype
+## What changed
 
-- Lightweight Flat-style clouds rendered as a 2D animated noise layer in the sky pass. The noise texture is reused under the MIT license, with attribution in `shaders/lib/MELLOW_MIT_NOTICE.txt`.
-- Adjustable cloud amount, opacity and animation speed.
-- Subtle terrain/entity colour shaping, green-dominant terrain tint, blue-teal water tint and sky/horizon haze.
-- Optional lightmap shaping and torch falloff, inspired by the general approach used by lightweight shaderpacks.
-- Emissive treatment for mapped light-source blocks using `block.properties`.
-- Heuristic glow enhancement for vivid warm/cool pixels on item/entity textures.
-- An inexpensive held-item light falloff using OptiFine's held block-light uniforms.
-- Optional two-stage half-resolution bloom. Bloom has a bright-pixel extraction stage and a 9-tap blur stage; Potato disables those passes.
-- POTATO and BALANCED profiles and individual Shader Options controls.
+- **World-anchored Flat clouds:** sky rays are transformed back into world space before the Mellow-style 2D noise projection. The cloud sheet should no longer slide when the player rotates their head.
+- **Shoreline foam:** water samples the existing opaque depth and a world-anchored noise texture to create broken foam along shallow intersections. Water is tinted toward a deeper turquoise/blue without reflections.
+- **World outlines:** the supplied World Outline Shader source informed an outline pass using projection-inverse view-distance reconstruction and symmetric depth taps. Threshold, thickness, brightness and distance fade are exposed as options.
+- **Lighting:** mapped torch/lantern/glowstone and related blocks receive an emissive treatment. Handheld light falloff and item glow are optional. These do not create physically correct coloured light propagation.
+- **Bloom:** optional high-threshold extraction plus a nine-tap half-resolution blur. It is deliberately off in the REIMAGINED profile to avoid the blown-out sky/radial smear from earlier builds; the BALANCED profile includes it.
+- **Colour grade:** exposure, saturation, vibrance and contrast controls. The supplied settings file informed the starting direction: saturation 1.1, vibrance 1.2 and neutral contrast. The supplied Mellow v3.4.1a.zip.txt is a settings text file, not the full shader source archive.
+- **Mellow source/licence:** the custom noise texture is derived from the MIT-licensed Mellow-derived source noted in shaders/lib/MELLOW_MIT_NOTICE.txt. The cloud shader implementation is independently adapted for GLSL 1.20 / OptiFine uniforms rather than a full import of the current Mellow source tree.
 
-## Cloud setting
+## Profiles
 
-The shader uses its own Flat-style clouds rather than vanilla Fast/Fancy clouds. OptiFine's Video Settings can override the shader-pack `clouds=off` property, so set **Options → Video Settings → Details → Clouds: OFF** while DriftLite is active. Then the shader draws the custom cloud sheet. If you disable `DL_FLAT_CLOUDS`, the result will be a clear sky, not vanilla Fast clouds.
+- **REIMAGINED:** visual features, custom clouds, shoreline foam, mapped emissive sources and outlines; bloom disabled.
+- **BALANCED:** same features with soft bloom enabled.
+- **POTATO:** colour/light/outline extras disabled, but world-anchored Flat clouds remain enabled.
+
+## Install notes
+
+While DriftLite is active, set Minecraft **Options → Video Settings → Details → Clouds → OFF**. This prevents vanilla Fast/Fancy clouds from drawing over the custom sky cloud layer. DL_FLAT_CLOUDS controls the custom cloud layer.
 
 ## Important limitations
 
-- “Emissive” means the source block/item appears bright and can bloom; it does not create true coloured light propagation onto surrounding blocks.
-- Item glow is a colour/brightness heuristic. Some bright warm or blue texture pixels may also be enhanced.
-- Handheld lighting approximates nearby illumination from OptiFine's held-light value and distance. It is not real-time dynamic shadowing.
-- The lightmap curve is deliberately simple and uses no shadow maps. Actual caves/daylight brightness should be checked on the target device.
-- Bloom is a selective bright-pixel threshold, so the sun, clouds and some white blocks can glow slightly as well.
+- The full shader program has not yet been compiled inside OptiFine 1.17.1 or MobileGlues.
+- The foam depends on depth-texture availability in the translucent water pass; test for shoreline coverage and artifacts.
+- Emissive blocks/items are brightened, but do not illuminate nearby blocks with coloured light. Handheld lighting is an approximation using OptiFine light uniforms.
+- The workflow checks files, GLSL version tags, braces and packaging only. It is not a GLSL compiler or a performance benchmark.
+- Complementary Reimagined remains the high-level visual reference. No Complementary code/assets are included.
 
-## Inspiration and licensing
+## License
 
-DriftLite's broad visual direction is inspired by the style of Complementary Reimagined, but no Complementary source or assets are copied. This is not an official Complementary project.
-
-Mellow's MIT-licensed cloud noise asset is attributed in the included notice. The Flat cloud integration and world-lighting controls are implemented specifically for DriftLite. Sildur's Enhanced Default is All Rights Reserved; none of its shader source is copied. Glow and handheld-light behavior are independently implemented from feature-level observation.
-
-## Build and test
-
-GitHub Actions checks required files, GLSL version tags, brace balance, and creates a ZIP artifact. It does not compile shaders in OptiFine or MobileGlues. Runtime appearance and FPS are unverified until tested on the target device. Compare frame rates in the same scene, resolution and settings before claiming performance results.
+Original DriftLite code is MIT licensed in LICENSE.txt. The Mellow-derived noise asset is covered by its included MIT attribution notice.

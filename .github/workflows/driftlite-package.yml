@@ -21,8 +21,7 @@ jobs:
           from pathlib import Path
           root = Path("projects/driftlite/shaders")
           required = [
-              "shaders.properties",
-              "block.properties",
+              "shaders.properties", "block.properties", "lang/en_US.lang",
               "gbuffers_terrain.vsh", "gbuffers_terrain.fsh",
               "gbuffers_entities.vsh", "gbuffers_entities.fsh",
               "gbuffers_textured.vsh", "gbuffers_textured.fsh",
@@ -34,6 +33,7 @@ jobs:
               "gbuffers_weather.vsh", "gbuffers_weather.fsh",
               "gbuffers_hand.vsh", "gbuffers_hand.fsh",
               "composite.vsh", "composite.fsh",
+              "composite1.vsh", "composite1.fsh",
               "composite2.vsh", "composite2.fsh",
               "final.vsh", "final.fsh",
               "lib/driftlite-cloud-noise.png",
@@ -49,7 +49,10 @@ jobs:
                       raise SystemExit(f"{path}: expected GLSL 1.20")
                   if source.count("{") != source.count("}"):
                       raise SystemExit(f"{path}: unbalanced braces")
-          print("Shader source structure checks passed. Runtime compilation is not tested here.")
+          properties = (root / "shaders.properties").read_text(encoding="utf-8")
+          if "program.world0/composite.enabled" in properties:
+              raise SystemExit("Bloom must not disable the always-on scene/outline composite pass.")
+          print("File/version/brace checks passed. This does not compile GLSL or verify runtime rendering.")
           PY
       - name: Package shader ZIP
         run: |

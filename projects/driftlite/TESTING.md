@@ -1,29 +1,31 @@
 # DriftLite testing record
 
 ## Target
-- Minecraft Java 1.17.1
-- OptiFine 1.17.1
+- Minecraft Java 1.17.1 + OptiFine
 - PojavLauncher / MobileGlues
 - Android 8.1 / Qualcomm Adreno 506 / OPPO A3s
 
-## Source features added
-- [x] Terrain/entity colour tuning and foliage tint.
-- [x] Water tint and sky/horizon haze options.
-- [x] Mellow-style 2D Flat cloud layer with a credited MIT noise asset.
-- [x] Mapped emissive block treatment using block.properties.
-- [x] Heuristic glow treatment for warm/cool item texture pixels.
-- [x] Held-item light falloff using OptiFine uniforms.
-- [x] Lightmap coordinate shaping and adjustable torch falloff.
-- [x] Optional half-resolution bloom extraction/blur and profiles.
-- [x] Workflow checks expanded to cover the new files/assets.
-- [ ] Set Minecraft Clouds to Off and verify no Fast clouds appear over the custom layer.
-- [ ] OptiFine 1.17.1 option parsing and shader compilation checked.
-- [ ] MobileGlues/GLES compilation checked.
-- [ ] Flat clouds assessed for banding, orientation and time animation in-game.
-- [ ] Torches, lanterns, glowstone, lava and emissive items assessed in-game.
-- [ ] Main-hand/off-hand light falloff assessed in-game.
-- [ ] Bloom artifacts/brightness and framebuffer routing checked in-game.
-- [ ] Day/night, rain, caves, water, Nether and End tested.
-- [ ] FPS/frame time measured against vanilla and prior build in the same scene/resolution.
+## Implemented source features
+- [x] World-space sky-ray transform for Flat clouds.
+- [x] Two-sample animated 2D cloud noise.
+- [x] Depth-aware shoreline foam and blue/teal water tint.
+- [x] Projection-inverse, symmetric depth outline detector.
+- [x] Outline options: master toggle, thickness, brightness, threshold and fade distance.
+- [x] Separate scene-outline, bloom extraction, bloom blur and final composition.
+- [x] Bloom remains optional and is disabled by the REIMAGINED preset.
+- [x] Adjustable final exposure, saturation, vibrance and contrast.
+- [x] Workflow validation covers the new program/texture files.
 
-A successful ZIP package is not proof of shader compilation, correctness, compatibility or performance on the target phone.
+## Still unverified in-game
+- [ ] OptiFine 1.17.1 compilation.
+- [ ] MobileGlues/GLES compilation.
+- [ ] Flat cloud stability during yaw/pitch rotation and player movement.
+- [ ] Flat-cloud blend with sun/moon and weather.
+- [ ] Shore foam on beaches, pool edges, rivers, underwater and at night.
+- [ ] Outline artifacts on leaves, transparent glass, fences, rails, entities and GUI.
+- [ ] Emissive blocks and held torch lighting.
+- [ ] Bloom threshold and half-resolution routing.
+- [ ] Overworld day/night, caves, rain, Nether and End.
+- [ ] FPS/frame-time compared in the same scene and resolution.
+
+A successful ZIP package is not proof of shader compilation, correctness, compatibility or FPS.
