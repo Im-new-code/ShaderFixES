@@ -20,32 +20,30 @@ varying vec3 dlWorldPos;
 
 vec3 ReconstructViewPos(vec2 uv, float depth) {
     vec4 p = gbufferProjectionInverse * vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
-    return p.xyz / max(abs(p.w), 0.00001) * sign(p.w);
+    return p.xyz / (max(abs(p.w), 0.00001) * sign(p.w));
 }
 
 void main() {
     vec4 color = texture2D(gtexture, dlTexCoord) * dlVertexColor;
     color.rgb *= texture2D(lightmap, dlLightCoord).rgb;
 
-    // Only alter mapped water blocks. Other translucent materials retain
-    // their vanilla sampling and alpha.
     if (abs(dlMaterial - 10001.0) < 0.5) {
-        float waterDistance = length(ReconstructViewPos(
-            gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z));
-
-        float opaqueDepth = texture2D(depthtex0, gl_FragCoord.xy / vec2(viewWidth, viewHeight)).r;
+        vec2 screenUV = gl_FragCoord.xy / vec2(max(viewWidth, 1.0), max(viewHeight, 1.0));
+        float waterDistance = length(ReconstructViewPos(screenUV, gl_FragCoord.z));
+        float opaqueDepth = texture2D(depthtex0, screenUV).r;
+        float gap = 1000.0;
         float shore = 0.0;
+
         if (opaqueDepth < 0.99999) {
-            float opaqueDistance = length(ReconstructViewPos(
-                gl_FragCoord.xy / vec2(viewWidth, viewHeight), opaqueDepth));
-            float gap = max(opaqueDistance - waterDistance, 0.0);
+            float opaqueDistance = length(ReconstructViewPos(screenUV, opaqueDepth));
+            gap = max(opaqueDistance - waterDistance, 0.0);
             shore = 1.0 - smoothstep(0.18, 1.15, gap);
         }
 
         #ifdef DL_WATER_TINT
-            float depthTint = smoothstep(0.1, 7.0, shore > 0.5 ? 0.0 : 2.0);
+            float deepWater = smoothstep(1.0, 7.0, gap);
             color.rgb *= vec3(0.94, 1.02, 1.08);
-            color.rgb = mix(color.rgb, vec3(0.055, 0.31, 0.48), 0.20 * (1.0 - depthTint));
+            color.rgb = mix(color.rgb, vec3(0.055, 0.31, 0.48), deepWater * 0.32);
         #endif
 
         #ifdef DL_WATER_FOAM
