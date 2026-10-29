@@ -1,6 +1,7 @@
 #version 120
 #define DL_WATER_TINT // Complementary-inspired turquoise water colour.
 #define DL_WATER_FOAM // Soft, broken shoreline foam from scene-depth and world noise.
+#define DL_FOAM_STRENGTH 0.85 // [0.0 0.25 0.5 0.65 0.85 1.0 1.25 1.5]
 
 uniform sampler2D gtexture;
 uniform sampler2D lightmap;
@@ -51,9 +52,9 @@ void main() {
             float foamNoiseA = texture2D(noisetex, foamUV + vec2(frameTimeCounter * 0.012, frameTimeCounter * 0.008)).r;
             float foamNoiseB = texture2D(noisetex, foamUV * 1.73 - vec2(frameTimeCounter * 0.007, frameTimeCounter * 0.011)).r;
             float brokenFoam = smoothstep(0.28, 0.69, foamNoiseA * 0.72 + foamNoiseB * 0.28);
-            float foam = shore * brokenFoam * (1.0 - rainStrength * 0.18);
-            color.rgb = mix(color.rgb, vec3(0.78, 0.91, 0.96), foam * 0.80);
-            color.a = max(color.a, foam * 0.70);
+            float foam = shore * brokenFoam * DL_FOAM_STRENGTH * (1.0 - rainStrength * 0.18);
+            color.rgb = mix(color.rgb, vec3(0.78, 0.91, 0.96), clamp(foam * 0.80, 0.0, 1.0));
+            color.a = max(color.a, clamp(foam * 0.70, 0.0, 0.85));
         #endif
     }
 

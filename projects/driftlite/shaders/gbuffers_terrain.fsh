@@ -4,7 +4,7 @@
 #define DL_FOLIAGE_TUNE // Slightly enhance green-dominant terrain texels.
 #define DL_WORLD_LIGHTING // Subtly reshape lightmap response for more readable lighting.
 #define DL_LIGHT_FALLOFF 1.35 // [1.0 1.15 1.25 1.35 1.5 1.65 1.85 2.1 2.4]
-#define DL_EMISSIVE_GLOW // Keep mapped light-source blocks bright for bloom.
+#define DL_EMISSIVE_GLOW // Keep mapped light-source blocks bright for optional bloom.
 #define DL_HANDHELD_LIGHTS // Add inexpensive light falloff from a held torch-like item.
 
 uniform sampler2D gtexture;
@@ -28,8 +28,6 @@ void main() {
 
     vec2 lightCoord = dlLightCoord;
     #ifdef DL_WORLD_LIGHTING
-        // Compact lightmap shaping: lift the sampling origin slightly and
-        // tune torch falloff without shadow maps or a second lighting pass.
         lightCoord = max(lightCoord * 1.06667 - vec2(0.0625), vec2(0.0));
         lightCoord.x = pow(max(lightCoord.x, 0.0), DL_LIGHT_FALLOFF);
     #endif
@@ -60,7 +58,7 @@ void main() {
         if (abs(dlMaterial - 10008.0) < 0.5) {
             float maxChannel = max(texel.r, max(texel.g, texel.b));
             float emission = smoothstep(0.18, 0.78, maxChannel);
-            color = max(color, texel.rgb * (0.88 + 0.28 * emission));
+            color = max(color, texel.rgb * (1.00 + 0.42 * emission));
         }
     #endif
 

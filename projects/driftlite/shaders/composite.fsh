@@ -3,6 +3,7 @@
 #define WORLD_OUTLINE_THICKNESS 2.0 // [1.0 1.5 2.0 2.5 3.0 4.0]
 #define WORLD_OUTLINE_I 1.15 // [0.25 0.5 0.75 1.0 1.15 1.5 2.0 2.5]
 #define WORLD_OUTLINE_DISTANCE_FADE 192.0 // [32.0 64.0 96.0 128.0 192.0 256.0 384.0 512.0]
+#define WORLD_OUTLINE_MIN_DISTANCE 0.5 // [0.0 0.25 0.5 0.75 1.0 1.5 2.0]
 #define WORLD_OUTLINE_THRESHOLD 3.0 // [1.0 1.5 2.0 2.5 3.0 3.5 4.0 5.0]
 
 uniform sampler2D colortex0;
@@ -48,11 +49,10 @@ void main() {
     float centerDistance = ReconstructDistance(texcoord, centerDepth);
 
     #ifdef WORLD_OUTLINE
-        if (centerDistance > 0.5) {
+        if (centerDistance > WORLD_OUTLINE_MIN_DISTANCE) {
             vec2 px = vec2(1.0 / max(viewWidth, 1.0), 1.0 / max(viewHeight, 1.0)) * WORLD_OUTLINE_THICKNESS;
             float edgeSignal = 0.0;
 
-            // Explicit taps avoid dynamic array indexing on mobile GLSL drivers.
             edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2( px.x, 0.0), centerDistance));
             edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2(-px.x, 0.0), centerDistance));
             edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2(0.0,  px.y), centerDistance));
