@@ -1,78 +1,124 @@
 #version 120
-#define WORLD_OUTLINE // Depth-based world outlines inspired by the uploaded World Outline Shader.
-#define WORLD_OUTLINE_THICKNESS 2.0 // [1.0 1.5 2.0 2.5 3.0 4.0]
-#define WORLD_OUTLINE_I 1.15 // [0.25 0.5 0.75 1.0 1.15 1.5 2.0 2.5]
-#define WORLD_OUTLINE_DISTANCE_FADE 192.0 // [32.0 64.0 96.0 128.0 192.0 256.0 384.0 512.0]
+/*
+ * DriftLite outline pass adapted from the uploaded World Outline Shader r1.0.
+ * Keep the original four-corner depth slope detector that the pack uses to
+ * obtain sharp edges. Output is redirected to colortex1 for the following
+ * final/bloom pipeline.
+ */
+#define WORLD_OUTLINE 1 // [0 1]
+#define WORLD_OUTLINE_THICKNESS 2.0 // [1.0 2.0 3.0]
+#define WORLD_OUTLINE_I 1.5 // [0.25 0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.5 3.0 4.0]
+#define WORLD_OUTLINE_DISTANCE_FADE 128.0 // [16.0 32.0 64.0 96.0 128.0 192.0 256.0 512.0 1024.0]
 #define WORLD_OUTLINE_MIN_DISTANCE 0.5 // [0.0 0.25 0.5 0.75 1.0 1.5 2.0]
 #define WORLD_OUTLINE_THRESHOLD 3.0 // [1.0 1.5 2.0 2.5 3.0 3.5 4.0 5.0]
+#define DL_CHUNK_FOG 0 // [0 1]
+#define DL_CHUNK_FOG_STRENGTH 0.75 // [0.25 0.5 0.75 1.0]
 
 uniform sampler2D colortex0;
 uniform sampler2D depthtex0;
+uniform sampler2D depthtex1;
 uniform float viewWidth;
 uniform float viewHeight;
+uniform float near;
+uniform float far;
+uniform float renderDistance;
+uniform vec3 fogColor;
 uniform mat4 gbufferProjectionInverse;
 uniform mat4 gbufferModelViewInverse;
-uniform vec3 fogColor;
+uniform vec3 cameraPosition;
 
 varying vec2 texcoord;
 
-float ReconstructDistance(vec2 uv, float depth) {
-    if (depth >= 0.999999) return 1e6;
-    vec4 p = gbufferProjectionInverse * vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
-    return length(p.xyz / max(abs(p.w), 0.00001));
+float GetLinearDepth(float depth) {
+    return (2.0 * near) / max(far + near - depth * (far - near), 0.000001);
 }
 
-float DepthEdge(vec2 uv, float centerDistance) {
-    vec2 safeUV = clamp(uv, vec2(0.001), vec2(0.999));
-    float sampleDepth = texture2D(depthtex0, safeUV).r;
-    float sampleDistance = ReconstructDistance(safeUV, sampleDepth);
-    if (sampleDistance > 1e5) return 1.0;
-    return abs(sampleDistance - centerDistance) / max(centerDistance, 1.0);
+vec3 ReconstructViewPos(vec2 uv, float depth) {
+    vec4 ndc = vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
+    vec4 view = gbufferProjectionInverse * ndc;
+    return view.xyz / max(abs(view.w), 0.000001) * sign(view.w);
 }
 
-/* DRAWBUFFERS:1 */
 void main() {
     vec3 color = texture2D(colortex0, texcoord).rgb;
-    float centerDepth = texture2D(depthtex0, texcoord).r;
+    float z0 = texture2D(depthtex0, texcoord).r;
 
-    if (centerDepth >= 0.999999) {
-        vec4 skyView = gbufferProjectionInverse * vec4(texcoord * 2.0 - 1.0, 1.0, 1.0);
-        vec3 skyDir = normalize(mat3(gbufferModelViewInverse) * normalize(skyView.xyz));
-        float horizon = pow(clamp(1.0 - abs(skyDir.y), 0.0, 1.0), 3.0);
-        vec3 haze = fogColor;
-        if (dot(haze, vec3(1.0)) < 0.01) haze = vec3(0.62, 0.76, 0.94);
-        color = mix(color, haze, horizon * 0.20);
+    // Sky pass-through plus subtle horizon haze. Never run the edge detector
+    // against depth-1 sky pixels, which caused broad outlines around sky gaps.
+    if (z0 >= 0.999999) {
+        vec3 viewPosSky = ReconstructViewPos(texcoord, z0);
+        vec3 worldDir = normalize(mat3(gbufferModelViewInverse) * viewPosSky);
+        float horizonFactor = 1.0 - clamp(abs(worldDir.y), 0.0, 1.0);
+        horizonFactor = horizonFactor * horizonFactor * horizonFactor;
+        vec3 fCol = fogColor;
+        if (dot(fCol, vec3(1.0)) < 0.01) fCol = vec3(0.62, 0.76, 0.94);
+        color = mix(color, fCol, horizonFactor * 0.20);
         gl_FragData[0] = vec4(color, 1.0);
         return;
     }
 
-    float centerDistance = ReconstructDistance(texcoord, centerDepth);
+    vec3 viewPos = ReconstructViewPos(texcoord, z0);
+    float worldDist = length(viewPos);
 
-    #ifdef WORLD_OUTLINE
-        if (centerDistance > WORLD_OUTLINE_MIN_DISTANCE) {
-            vec2 px = vec2(1.0 / max(viewWidth, 1.0), 1.0 / max(viewHeight, 1.0)) * WORLD_OUTLINE_THICKNESS;
-            float edgeSignal = 0.0;
+    float z1 = texture2D(depthtex1, texcoord).r;
+    vec3 worldPos = (gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz + cameraPosition;
+    bool isCloud = (z1 >= 0.9999) && (worldPos.y > 75.0);
 
-            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2( px.x, 0.0), centerDistance));
-            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2(-px.x, 0.0), centerDistance));
-            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2(0.0,  px.y), centerDistance));
-            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2(0.0, -px.y), centerDistance));
-            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2( px.x,  px.y), centerDistance));
-            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2(-px.x,  px.y), centerDistance));
-            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2( px.x, -px.y), centerDistance));
-            edgeSignal = max(edgeSignal, DepthEdge(texcoord + vec2(-px.x, -px.y), centerDistance));
+    float linearZ0 = GetLinearDepth(z0);
 
-            float low = 0.0015 * WORLD_OUTLINE_THRESHOLD;
-            float high = 0.0060 * WORLD_OUTLINE_THRESHOLD;
-            float edge = smoothstep(low, high, edgeSignal);
-            float fade = 1.0 - smoothstep(WORLD_OUTLINE_DISTANCE_FADE * 0.70,
-                                          WORLD_OUTLINE_DISTANCE_FADE,
-                                          centerDistance);
-            float outline = edge * fade * WORLD_OUTLINE_I;
+#if WORLD_OUTLINE
+    if (worldDist >= WORLD_OUTLINE_MIN_DISTANCE) {
+        vec2 resolution = vec2(max(viewWidth, 1.0), max(viewHeight, 1.0));
+        vec2 scale = 1.0 / resolution;
 
-            color += min(color * outline * 0.38, vec3(outline * 0.22));
+        vec2 texCoordDirection = sign(texcoord - vec2(0.5));
+        vec2 checkCoord = texcoord + scale * vec2(
+            texCoordDirection.x * WORLD_OUTLINE_THICKNESS,
+            texCoordDirection.y * WORLD_OUTLINE_THICKNESS
+        );
+        vec2 absCheckCoord = abs(checkCoord - vec2(0.5));
+        float outlineMult = max(0.0, 0.5 - max(absCheckCoord.x, absCheckCoord.y));
+        outlineMult = min(1.0, outlineMult * 0.1 / (scale.x * WORLD_OUTLINE_THICKNESS));
+
+        float fadeOutline = isCloud ? 1.0 :
+            1.0 - smoothstep(WORLD_OUTLINE_DISTANCE_FADE * 0.7,
+                             WORLD_OUTLINE_DISTANCE_FADE, worldDist);
+        outlineMult *= fadeOutline;
+
+        if (outlineMult > 0.0001) {
+            outlineMult *= 0.25;
+            vec2 o = scale * WORLD_OUTLINE_THICKNESS;
+
+            float r0 = 1.0 / GetLinearDepth(texture2D(depthtex0, texcoord + vec2(-o.x, -o.y)).r);
+            float r1 = 1.0 / GetLinearDepth(texture2D(depthtex0, texcoord + vec2(-o.x,  o.y)).r);
+            float r2 = 1.0 / GetLinearDepth(texture2D(depthtex0, texcoord + vec2( o.x, -o.y)).r);
+            float r3 = 1.0 / GetLinearDepth(texture2D(depthtex0, texcoord + vec2( o.x,  o.y)).r);
+            float rA = 0.25 * (r0 + r1 + r2 + r3);
+
+            float slope = (1.0 / linearZ0 - rA) * (linearZ0 * linearZ0);
+            float threshold = linearZ0 / 2000.0 * WORLD_OUTLINE_THICKNESS * WORLD_OUTLINE_THRESHOLD / 3.0;
+            float rawOutline = clamp(slope / max(threshold, 0.000001), 0.0, 1.0);
+            rawOutline = smoothstep(0.35, 0.65, rawOutline);
+
+            float outline = rawOutline * WORLD_OUTLINE_I * outlineMult;
+            float strength = isCloud ? 0.22 : 1.0;
+            color += min(color * outline * strength, vec3(outline * strength));
         }
-    #endif
+    }
+#endif
+
+#if DL_CHUNK_FOG
+    if (!isCloud) {
+        float refDist = renderDistance > 1.0 ? renderDistance * 16.0 : far;
+        refDist = clamp(refDist, 32.0, 1024.0);
+        float fStart = refDist * 0.55;
+        float fEnd = refDist * 0.95;
+        float fogFactor = smoothstep(fStart, fEnd, worldDist) * DL_CHUNK_FOG_STRENGTH;
+        vec3 fCol = fogColor;
+        if (dot(fCol, vec3(1.0)) < 0.01) fCol = vec3(0.62, 0.76, 0.94);
+        color = mix(color, fCol, fogFactor);
+    }
+#endif
 
     gl_FragData[0] = vec4(color, 1.0);
 }
