@@ -1,0 +1,59 @@
+name: DriftLite shader package
+
+on:
+  push:
+    branches:
+      - create/driftlite-mobile-performance
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Validate shader files
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          root = Path("projects/driftlite/shaders")
+          required = [
+              "shaders.properties",
+              "gbuffers_terrain.vsh", "gbuffers_terrain.fsh",
+              "gbuffers_entities.vsh", "gbuffers_entities.fsh",
+              "gbuffers_textured.vsh", "gbuffers_textured.fsh",
+              "gbuffers_textured_lit.vsh", "gbuffers_textured_lit.fsh",
+              "gbuffers_skybasic.vsh", "gbuffers_skybasic.fsh",
+              "gbuffers_skytextured.vsh", "gbuffers_skytextured.fsh",
+              "gbuffers_clouds.vsh", "gbuffers_clouds.fsh",
+              "gbuffers_water.vsh", "gbuffers_water.fsh",
+              "gbuffers_weather.vsh", "gbuffers_weather.fsh",
+              "gbuffers_hand.vsh", "gbuffers_hand.fsh",
+          ]
+          missing = [name for name in required if not (root / name).is_file()]
+          if missing:
+              raise SystemExit("Missing shader files: " + ", ".join(missing))
+          for path in root.glob("*"):
+              if path.suffix in {".vsh", ".fsh"}:
+                  source = path.read_text(encoding="utf-8")
+                  if "#version 120" not in source:
+                      raise SystemExit(f"{path}: expected GLSL 1.20")
+                  if source.count("{") != source.count("}"):
+                      raise SystemExit(f"{path}: unbalanced braces")
+          print("Shader source structure checks passed.")
+          PY
+      - name: Package shader ZIP
+        run: |
+          mkdir -p dist
+          cd projects/driftlite
+          zip -r ../../dist/DriftLite-OptiFine-1.17.1.zip shaders
+      - name: Upload shader artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DriftLite-OptiFine-1.17.1
+          path: dist/DriftLite-OptiFine-1.17.1.zip
+          if-no-files-found: error
+          retention-days: 30
