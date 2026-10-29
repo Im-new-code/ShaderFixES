@@ -8,6 +8,7 @@ varying vec2 dlLightCoord;
 varying vec4 dlVertexColor;
 varying float dlMaterial;
 varying vec3 dlWorldPos;
+varying vec3 dlWorldNormal;
 
 void main() {
     gl_Position = ftransform();
@@ -18,4 +19,5 @@ void main() {
 
     vec3 viewPosition = (gl_ModelViewMatrix * gl_Vertex).xyz;
     dlWorldPos = (gbufferModelViewInverse * vec4(viewPosition, 1.0)).xyz + cameraPosition;
+    dlWorldNormal = normalize(mat3(gbufferModelViewInverse) * (gl_NormalMatrix * gl_Normal));
 }
