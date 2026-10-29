@@ -6,9 +6,12 @@
 #define DL_LIGHT_FALLOFF 1.35 // [1.0 1.15 1.25 1.35 1.5 1.65 1.85 2.1 2.4]
 #define DL_EMISSIVE_GLOW // Keep mapped light-source blocks bright for optional bloom.
 #define DL_HANDHELD_LIGHTS // Add inexpensive light falloff from a held torch-like item.
+#define DL_SHADOWS // Lightweight directional shadow map with four-tap filtering.
+#define DL_SHADOW_STRENGTH 0.72 // [0.35 0.45 0.55 0.65 0.72 0.80 0.90 1.00]
 
 uniform sampler2D gtexture;
 uniform sampler2D lightmap;
+uniform sampler2D shadowtex0;
 uniform float fogStart;
 uniform float fogEnd;
 uniform vec3 fogColor;
@@ -21,6 +24,39 @@ varying vec4 dlVertexColor;
 varying float dlViewDepth;
 varying float dlMaterial;
 varying vec3 dlViewPos;
+varying vec3 dlViewNormal;
+varying vec4 dlShadowPos;
+varying float dlShadowFacing;
+
+const float DL_SHADOW_MAP_RESOLUTION = 1024.0;
+
+float DL_GetShadowVisibility() {
+    if (dlShadowFacing <= 0.0) return 0.0;
+
+    float safeW = abs(dlShadowPos.w) < 0.000001
+        ? (dlShadowPos.w < 0.0 ? -0.000001 : 0.000001)
+        : dlShadowPos.w;
+    vec3 shadowCoord = dlShadowPos.xyz / safeW * 0.5 + 0.5;
+
+    // Out-of-map samples should be lit rather than clamp to the map border.
+    if (shadowCoord.x <= 0.001 || shadowCoord.x >= 0.999 ||
+        shadowCoord.y <= 0.001 || shadowCoord.y >= 0.999 ||
+        shadowCoord.z <= 0.0 || shadowCoord.z >= 1.0) {
+        return 1.0;
+    }
+
+    float facing = clamp(dlShadowFacing, 0.0, 1.0);
+    float bias = 0.00065 + (1.0 - facing) * 0.00115;
+    vec2 texel = vec2(1.0 / DL_SHADOW_MAP_RESOLUTION);
+    vec2 d = texel * 0.5;
+
+    float visibility = 0.0;
+    visibility += step(shadowCoord.z - bias, texture2D(shadowtex0, shadowCoord.xy + vec2(-d.x, -d.y)).r);
+    visibility += step(shadowCoord.z - bias, texture2D(shadowtex0, shadowCoord.xy + vec2( d.x, -d.y)).r);
+    visibility += step(shadowCoord.z - bias, texture2D(shadowtex0, shadowCoord.xy + vec2(-d.x,  d.y)).r);
+    visibility += step(shadowCoord.z - bias, texture2D(shadowtex0, shadowCoord.xy + vec2( d.x,  d.y)).r);
+    return visibility * 0.25;
+}
 
 void main() {
     vec4 texel = texture2D(gtexture, dlTexCoord) * dlVertexColor;
@@ -37,6 +73,17 @@ void main() {
         float heldLight = max((heldValue - length(dlViewPos)) / 15.0, 0.0);
         heldLight = pow(heldLight, 1.65);
         lightCoord.x = max(lightCoord.x, heldLight);
+    #endif
+
+    #ifdef DL_SHADOWS
+        if (dlShadowFacing > 0.0) {
+            float visibility = DL_GetShadowVisibility();
+            lightCoord.y *= mix(1.0 - DL_SHADOW_STRENGTH, 1.0, visibility);
+        } else {
+            // Modest directional fill reduction for back-facing terrain while
+            // retaining enough skylight to avoid crushing the shaded side.
+            lightCoord.y *= 1.0 - DL_SHADOW_STRENGTH * 0.16;
+        }
     #endif
 
     vec3 color = texel.rgb * texture2D(lightmap, lightCoord).rgb;

@@ -23,3 +23,8 @@ GitHub Actions packaging does not compile the shader inside OptiFine or emulate 
 ## Latest visual correction
 
 The sky shader now reconstructs a world-space viewing ray per fragment from screen coordinates and the inverse projection/view matrices instead of interpolating the sky mesh vertex direction. This is intended to prevent wide radial cloud streaks when the previous sky geometry interpolant did not represent the per-pixel camera ray. World outlines are now disabled in the BALANCED and REIMAGINED profiles by default because strong screen-space edge highlights are not part of the desired Complementary-like style; the outline control remains available for users who want it.
+
+
+## Directional lighting update
+
+The latest development pass adds a basic OptiFine shadow-map stage with alpha-tested foliage and a four-tap terrain receiver. The shadow map is configured to 1024 resolution and 96 block distance, and can be disabled through the shader options. This implementation is source-compiled in CI, but still requires in-game testing for bias, shadow direction, foliage and device performance.

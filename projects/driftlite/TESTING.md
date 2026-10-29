@@ -29,3 +29,10 @@
 - [ ] FPS/frame-time compared in identical scenes/resolution.
 
 A successful ZIP package is not proof of shader compilation, correctness, compatibility or FPS. The CI job checks source structure and packaging only unless a GLSL compiler step explicitly passes.
+
+
+## Directional shadow pass
+- [x] Alpha-tested shadow pass source, excluding water from shadow casting.
+- [x] Terrain shadow-coordinate transform and four-tap depth comparison filter.
+- [x] Shadow resolution/distance and strength controls, with shadows disabled in POTATO profile.
+- [ ] Verify bias, shadow direction, vegetation cutouts, shadow distance and frame-time in OptiFine 1.17.1 on MobileGlues.

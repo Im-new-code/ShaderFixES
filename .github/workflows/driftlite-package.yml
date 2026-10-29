@@ -27,6 +27,7 @@ jobs:
           required = [
               "shaders.properties", "block.properties", "lang/en_US.lang",
               "gbuffers_terrain.vsh", "gbuffers_terrain.fsh",
+              "shadow.vsh", "shadow.fsh",
               "gbuffers_entities.vsh", "gbuffers_entities.fsh",
               "gbuffers_textured.vsh", "gbuffers_textured.fsh",
               "gbuffers_textured_lit.vsh", "gbuffers_textured_lit.fsh",
