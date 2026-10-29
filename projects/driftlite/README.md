@@ -4,12 +4,12 @@ An independently written OptiFine-format shader prototype for Minecraft Java 1.1
 
 - **Target:** Minecraft 1.17.1 + OptiFine 1.17.1
 - **Device target:** PojavLauncher, Android 8.1, MobileGlues, Adreno 506
-- **Status:** Initial source prototype. Runtime compilation and gameplay testing are pending.
+- **Status:** Early prototype. The first on-device screenshot exposed a lightmap-coordinate bug; the shader stages now use the built-in texture matrices for atlas/lightmap sampling. Runtime compilation and visual retesting remain pending.
 
 ## Approach
 This project does not copy Complementary Reimagined source or redistribute its files. It uses aesthetic inspiration only and implements a separate minimal pipeline from original code. Upstream reference: https://github.com/ComplementaryDevelopment/ComplementaryReimagined
 
-First-stage trade-offs: no shadow maps, SSAO, SSR, bloom, volumetric effects, or temporal post-processing. The initial version focuses on low pass count, vanilla texture/lightmap sampling, a restrained optional color treatment, and low-cost distance fog.
+First-stage trade-offs: no shadow maps, SSAO, SSR, bloom, volumetric effects, or temporal post-processing. The initial version focuses on low pass count, correctly transformed vanilla texture/lightmap coordinates, an optional restrained color treatment, and low-cost distance fog.
 
 ## Build
 The `DriftLite shader package` GitHub Actions workflow validates required source files and packages `shaders/` into a ZIP artifact. Download the artifact from the workflow run and place the ZIP in `.minecraft/shaderpacks/`, then select it under Options → Video Settings → Shaders.
@@ -18,7 +18,7 @@ The `DriftLite shader package` GitHub Actions workflow validates required source
 - Source structure: included in workflow checks.
 - OptiFine compilation: **Not tested**.
 - MobileGlues compatibility: **Not tested**.
-- Visual correctness: **Not tested**.
+- Visual correctness after coordinate fix: **Needs device retest**.
 - FPS/frame time: **Not measured**.
 
 Packaging success is not proof of shader compilation or performance on-device. Report the first shader compile error from `latest.log` if it fails.
