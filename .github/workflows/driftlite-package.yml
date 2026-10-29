@@ -15,6 +15,10 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+      - name: Install GLSL validator
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y glslang-tools
       - name: Validate shader files
         run: |
           python - <<'PY'
@@ -53,8 +57,19 @@ jobs:
           properties = (root / "shaders.properties").read_text(encoding="utf-8")
           if "program.world0/composite.enabled" in properties:
               raise SystemExit("Bloom must not disable the always-on scene/outline composite pass.")
-          print("File/version/brace checks passed. This does not compile GLSL or verify runtime rendering.")
+          print("File/version/brace checks passed.")
           PY
+      - name: Compile GLSL 1.20 stages
+        run: |
+          set -eu
+          for shader in projects/driftlite/shaders/*.vsh; do
+            echo "Compile vertex: $shader"
+            glslangValidator -S vert "$shader"
+          done
+          for shader in projects/driftlite/shaders/*.fsh; do
+            echo "Compile fragment: $shader"
+            glslangValidator -S frag "$shader"
+          done
       - name: Package shader ZIP
         run: |
           mkdir -p dist
