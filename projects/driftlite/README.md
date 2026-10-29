@@ -18,3 +18,8 @@ The previous build incorrectly used `colortex1` for scene-color output. In OptiF
 ## Important testing note
 
 GitHub Actions packaging does not compile the shader inside OptiFine or emulate MobileGlues. Install and check this corrective build before evaluating the new appearance. Complementary Reimagined remains the visual reference; no Complementary code/assets are included.
+
+
+## Latest visual correction
+
+The sky shader now reconstructs a world-space viewing ray per fragment from screen coordinates and the inverse projection/view matrices instead of interpolating the sky mesh vertex direction. This is intended to prevent wide radial cloud streaks when the previous sky geometry interpolant did not represent the per-pixel camera ray. World outlines are now disabled in the BALANCED and REIMAGINED profiles by default because strong screen-space edge highlights are not part of the desired Complementary-like style; the outline control remains available for users who want it.
